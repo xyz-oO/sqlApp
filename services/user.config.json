@@ -1,0 +1,24 @@
+{
+  "users": [
+    {
+      "username": "user1",
+      "md5": "c3b9c1f43b0664fe2895c926920633ef",
+      "status": 0
+    },
+    {
+      "username": "user2",
+      "md5": "779110cd8112e9f6339748b2077270b6",
+      "status": 1
+    },
+    {
+      "username": "user3",
+      "md5": "779110cd8112e9f6339748b2077270b6",
+      "status": 1
+    },
+    {
+      "username": "lulu",
+      "md5": "c3b9c1f43b0664fe2895c926920633ef",
+      "status": 0
+    }
+  ]
+}

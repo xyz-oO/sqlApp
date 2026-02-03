@@ -1,0 +1,17 @@
+/node_modules
+/.env.local
+/.umirc.local.ts
+/config/config.local.ts
+/src/.umi
+/src/.umi-production
+/src/.umi-test
+/dist
+.swc
+.turbopack
+/services/dist 
+/services/.venv
+/services.tar
+/dist
+.DS_Store
+.npmrc
+/services/__pycache__

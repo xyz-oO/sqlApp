@@ -1,0 +1,27 @@
+{
+  "name": "sqlApp",
+  "private": true,
+  "author": "lll",
+  "date": "2026-01-27",
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "description": "A web platform for SQL management",
+  "scripts": {
+    "dev": "umi dev",
+    "build": "umi build",
+    "postinstall": "umi setup",
+    "setup": "umi setup",
+    "start": "npm run dev"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.1.0",
+    "antd": "^6.2.2",
+    "umi": "4.6.24"
+  },
+  "devDependencies": {
+    "@umijs/plugins": "^4.6.24"
+  }
+}

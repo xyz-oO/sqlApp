@@ -1,0 +1,6 @@
+Flask==3.0.3
+flask-cors==4.0.1
+PyJWT==2.8.0
+SQLAlchemy==2.0.30
+pymysql==1.1.0
+
