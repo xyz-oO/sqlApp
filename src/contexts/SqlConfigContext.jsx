@@ -25,10 +25,10 @@ export function SqlConfigProvider({ children }) {
   };
 
   useEffect(() => {
-    if (sessionChecked && session?.sessionId) {
+    if (sessionChecked && session?.username) {
       loadSqlConfigs();
     }
-  }, [session, sessionChecked]);
+  }, [session?.username, sessionChecked]);
 
   const refreshSqlConfigs = async () => {
     await loadSqlConfigs();

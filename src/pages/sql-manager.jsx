@@ -36,6 +36,7 @@ export default function SqlManagerPage() {
   const [dbConfigLoading, setDbConfigLoading] = useState(false);
   const [deletingDbConfig, setDeletingDbConfig] = useState(null);
   const [editingDbConfig, setEditingDbConfig] = useState(null);
+  const [dbNameError, setDbNameError] = useState('');
 
   const openConfig = () => {
     setConfigOpen(true);
@@ -51,6 +52,7 @@ export default function SqlManagerPage() {
     setEditingDbConfig(null); // Clear editing state
     setConfigOpen(true);
     setConfigLoaded(true);
+    setDbNameError('');
     console.log("openNewConfig")
   };
   const openConfigInEditMode = async (record = null) => {
@@ -64,9 +66,11 @@ export default function SqlManagerPage() {
       setEditingDbConfig(record); // Track the original config being edited
       setConfigOpen(true);
       setConfigLoaded(true);
+      setDbNameError('');
     } else {
       setConfigOpen(true);
       setConfigLoaded(false);
+      setDbNameError('');
     }
   };
   
@@ -151,8 +155,10 @@ export default function SqlManagerPage() {
   };
 
   useEffect(() => {
-    loadDbConfig();
-  }, []);
+    if (session?.username) {
+      loadDbConfig();
+    }
+  }, [session?.username]);
 
   useEffect(() => {
     if (!configOpen || configLoaded) {
@@ -186,12 +192,30 @@ export default function SqlManagerPage() {
       });
       setTestResult({ ok: true, message: data?.message || 'connection ok' });
     } catch (error) {
-      const message = error?.response?.data?.error || 'connection failed';
+      console.log("catch error:",error)
+      let message='connection failed';
+      if(error?.response?.data?.error.includes("cryptography")){
+        message = '密码错误'
+      }else{
+        message = error?.response?.data?.error;
+
+      }
       setTestResult({ ok: false, message });
     }
   };
 
   const handleUpdateConfig = async () => {
+    // Only check for duplicate database name when creating a new config
+    if (!editingDbConfig) {
+      const existingConfig = dbConfigs.find(config => config.database === database);
+      
+      if (existingConfig) {
+        setNotice('数据库名已存在，请使用不同的数据库名');
+        setTimeout(() => setNotice(''), 3000);
+        return false;
+      }
+    }
+
     try {
       // If editing an existing config and database name changed, delete the old one first
       if (editingDbConfig && editingDbConfig.database !== database) {
@@ -251,6 +275,9 @@ export default function SqlManagerPage() {
       if (editingSqlConfig) {
         await request(`/sql/config/${editingSqlConfig.id}`, {
           method: 'PUT',
+          headers: {
+            'X-Username': session?.username || 'user'
+          },
           data: {
             menu_name: menuName,
             sql: sqlContent,
@@ -260,6 +287,9 @@ export default function SqlManagerPage() {
       } else {
         await request('/sql/config', {
           method: 'POST',
+          headers: {
+            'X-Username': session?.username || 'user'
+          },
           data: {
             menu_name: menuName,
             sql: sqlContent,
@@ -320,14 +350,7 @@ export default function SqlManagerPage() {
         </p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* <span className={styles.terminalContent}>数据库连接配置</span>
-            <button
-              type="button"
-              className={styles.terminalIconButton}
-              onClick={openConfig}
-            >
-              <SettingOutlined style={{ fontSize: '24px', color: '#696F75' }} />
-            </button> */}
+        
           </div>
         </div>
         <div className={styles.dashboardPanel}>
@@ -338,18 +361,7 @@ export default function SqlManagerPage() {
               新建配置
             </Button>
           </div>
-          {/* <div style={{ color: '#8dff9d', marginBottom: '10px' }}>加载的配置数量: {dbConfigs.length}</div> */}
-          {/* Debug list to show all configs */}
-          {/* <div style={{ marginBottom: '10px', color: '#b7d3bd' }}>
-            <h4>Debug: All Configs</h4>
-            <ul>
-              {dbConfigs.map((config, index) => (
-                <li key={config.database}>
-                  {index + 1}: {config.database} ({config.host}:{config.port}) - {config.user}
-                </li>
-              ))}
-            </ul>
-          </div> */}
+  
           {dbConfigLoading ? (
             <div className={styles.terminalContent}>加载中...</div>
           ) : dbConfigs.length === 0 ? (
@@ -519,6 +531,7 @@ export default function SqlManagerPage() {
         menuName={menuName}
         sqlContent={sqlContent}
         dbname={dbname}
+        dbConfigs={dbConfigs}
         onMenuNameChange={setMenuName}
         onSqlContentChange={setSqlContent}
         onDbnameChange={setDbname}

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'umi';
 import { useApp } from '../contexts/appContext';
+import TerminalPasswordInput from '../components/TerminalPasswordInput';
+import TerminalTextInput from '../components/TerminalTextInput';
 import styles from '../themes/terminal.less';
 
 export default function HomePage() {
@@ -79,23 +81,20 @@ export default function HomePage() {
             <form className={styles.form} onSubmit={handleSubmit}>
               <label className={styles.field}>
                 username
-                <input
-                  name="username"
+                <TerminalTextInput
                   value={formState.username}
-                  onChange={handleChange}
+                  onChange={(value) => setFormState(prev => ({ ...prev, username: value }))}
                   placeholder="username"
-                  autoComplete="username"
+                  style={{ width: '100%', minWidth: '300px' }}
                 />
               </label>
               <label className={styles.field}>
                 password
-                <input
-                  name="password"
+                <TerminalPasswordInput
                   value={formState.password}
-                  onChange={handleChange}
-                  type="password"
+                  onChange={(value) => setFormState(prev => ({ ...prev, password: value }))}
                   placeholder="password"
-                  autoComplete="current-password"
+                  style={{ width: '100%', minWidth: '300px' }}
                 />
               </label>
               {error ? <div className={styles.error}>{error}</div> : null}

@@ -331,8 +331,8 @@ def update_db_config():
     )
     
     if config_index is not None:
-        # Update existing config
-        existing_configs[config_index] = new_config
+        # Return error if database already exists
+        return jsonify({"error": "数据库名已存在，请使用不同的数据库名"}), 409
     else:
         # Add new config
         existing_configs.append(new_config)
@@ -418,8 +418,8 @@ def save_sql_config():
     if any(config.get("menu_name") == menu_name for config in existing_configs):
         return jsonify({"error": "目录名已存在"}), 409
     
-    if any(config.get("dbname") == dbname for config in existing_configs):
-        return jsonify({"error": "database already exists"}), 409
+    # if any(config.get("dbname") == dbname for config in existing_configs):
+    #     return jsonify({"error": "database already exists"}), 409
     
     new_config = {
         "id": str(uuid.uuid4()),

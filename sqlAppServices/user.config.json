@@ -3,7 +3,7 @@
     {
       "username": "user1",
       "md5": "c3b9c1f43b0664fe2895c926920633ef",
-      "status": 0
+      "status": 1
     },
     {
       "username": "user2",
@@ -19,6 +19,11 @@
       "username": "lulu",
       "md5": "c3b9c1f43b0664fe2895c926920633ef",
       "status": 0
+    },
+    {
+      "username": "abc",
+      "md5": "c3b9c1f43b0664fe2895c926920633ef",
+      "status": 1
     }
   ]
 }

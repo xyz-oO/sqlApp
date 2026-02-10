@@ -1,7 +1,6 @@
-import { Input, Typography } from 'antd';
+import TerminalTextInput from './TerminalTextInput';
+import TerminalPasswordInput from './TerminalPasswordInput';
 import styles from '../themes/terminal.less';
-
-const { Text } = Typography;
 
 export default function DbConfigModal({
   open,
@@ -32,6 +31,7 @@ export default function DbConfigModal({
       <div
         className={styles.terminalModalCard}
         onClick={(event) => event.stopPropagation()}
+        style={{ width: '600px' }}
       >
         <div className={styles.terminalModalHeader}>
           <span>数据库连接配置</span>
@@ -40,63 +40,46 @@ export default function DbConfigModal({
           </button>
         </div>
         <div className={styles.terminalModalBody}>
-          <div className={styles.terminalModalField}>
-            <Text>Host</Text>
-            <Input
+          <div style={{ margin: '24px 0' }}>
+            <label>Host</label>
+            <TerminalTextInput
               value={host}
-              onChange={(event) => onHostChange(event.target.value)}
+              onChange={onHostChange}
               placeholder="IP"
+              style={{width:"560px"}}
               autoFocus
-              size="large"
-              disabled={false}
-              spellCheck={false}
             />
           </div>
-          <div className={styles.terminalModalField}>
-            <Text>Database</Text>
-            <Input
+          <div style={{ margin: '24px 0' }}>
+            <label>Database</label>
+            <TerminalTextInput
               value={database}
-              onChange={(event) => onDatabaseChange(event.target.value)}
+              onChange={onDatabaseChange}
               placeholder="数据库名"
-              size="large"
-              disabled={false}
-              spellCheck={false}
             />
           </div>
-          <div className={styles.terminalModalField}>
-            <Text>Port</Text>
-            <Input
+          <div style={{ margin: '24px 0' }}>
+            <label>Port</label>
+            <TerminalTextInput
               value={port}
-              onChange={(event) => onPortChange(event.target.value)}
+              onChange={onPortChange}
               placeholder="端口"
-              size="large"
-              disabled={false}
-              spellCheck={false}
             />
           </div>
-          <div className={styles.terminalModalField}>
-            <Text>Username</Text>
-            <Input
+          <div style={{ margin: '24px 0' }}>
+            <label>Username</label>
+            <TerminalTextInput
               value={username}
-              onChange={(event) => onUsernameChange(event.target.value)}
+              onChange={onUsernameChange}
               placeholder="用户名"
-              size="large"
-              disabled={false}
-              spellCheck={false}
             />
           </div>
-          <div className={styles.terminalModalField}>
-            <Text>Password</Text>
-            <Input.Password
+          <div style={{ margin: '24px 0' }}>
+            <label>Password</label>
+            <TerminalPasswordInput
               value={password}
-              size="large"
-              onChange={(event) => onPasswordChange(event.target.value)}
+              onChange={onPasswordChange}
               placeholder="密码"
-              disabled={false}
-              spellCheck={false}
-              iconRender={(visible) => (
-                <span style={{ fontSize: '20px' }}>{visible ? '👁️':'🙈' }</span>
-              )}
             />
           </div>
           {error ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{error}</div> : null}

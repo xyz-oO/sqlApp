@@ -1,13 +1,17 @@
-import { Input, Button } from 'antd';
+import Button from 'antd/es/button';
+import TextArea from 'antd/es/input/TextArea';
+import Tooltip from 'antd/es/tooltip';
+import { QuestionCircleOutlined } from '@ant-design/icons';
+import TerminalTextInput from './TerminalTextInput';
+import TerminalSelect from './TerminalSelect';
 import styles from '../themes/terminal.less';
-
-const { TextArea } = Input;
 
 export default function SqlSubmitModal({
   open,
   menuName,
   sqlContent,
   dbname,
+  dbConfigs,
   onMenuNameChange,
   onSqlContentChange,
   onDbnameChange,
@@ -33,32 +37,39 @@ export default function SqlSubmitModal({
           </button>
         </div>
         <div className={styles.terminalModalBody}>
-          <div className={styles.terminalModalField}>
-            {/* <label>目录名</label> */}
-            <Input
-              className={styles.terminalInput}
+          <div style={{ margin: '24px 0' }}>
+            <div>
+              <label>
+                <span>目录名</span>
+                 <Tooltip title="自定义目录名，将显示在主页左侧导航栏">
+                <QuestionCircleOutlined style={{ marginLeft: '6px', cursor: 'help', color: '#8dff9d', fontSize: '14px' }} />
+              </Tooltip>
+              </label>
+             
+            </div>
+            <TerminalTextInput
               placeholder="请输入目录名"
-              spellCheck={false}
               value={menuName}
-              onChange={(e) => onMenuNameChange(e.target.value)}
-              size="large"
+              onChange={onMenuNameChange}
             />
           </div>
-          <div className={styles.terminalModalField}>
-            {/* <label>数据库名</label> */}
-            <Input
-              className={styles.terminalInput}
-              placeholder="请输入数据库名"
-              spellCheck={false}
+          <div style={{ margin: '24px 0' }}>
+            <label>数据库名</label>
+            <TerminalSelect
               value={dbname}
-              onChange={(e) => onDbnameChange(e.target.value)}
-              size="large"
+              onChange={onDbnameChange}
+              options={dbConfigs?.map(config => ({
+                value: config.database,
+                label: config.database
+              })) || []}
+              placeholder="请选择数据库名"
+              style={{ width: '100%', minWidth: '300px' }}
             />
           </div>
-          <div className={styles.terminalModalField}>
-            {/* <label>SQL内容</label> */}
-            <TextArea
-              className={styles.terminalEditor}
+          <div style={{ margin: '24px 0' }}>
+            <label>SQL内容</label>
+            <textarea
+              className={styles.terminalTextArea}
               rows={6}
               placeholder="Write SQL here..."
               spellCheck={false}

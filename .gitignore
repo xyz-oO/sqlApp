@@ -8,10 +8,10 @@
 /dist
 .swc
 .turbopack
-/services/dist 
-/services/.venv
-/services.tar
+/sqlAppServices/dist 
+/sqlAppServices/.venv
+/sqlAppServices.tar
 /dist
 .DS_Store
 .npmrc
-/services/__pycache__
+/sqlAppServices/__pycache__

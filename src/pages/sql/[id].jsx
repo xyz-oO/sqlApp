@@ -3,11 +3,13 @@ import { useParams } from 'umi';
 import { request } from 'umi';
 import styles from '../../themes/terminal.less';
 import SidebarNav from '../../components/SidebarNav';
-import { Table, Button, Space, Alert, Input } from 'antd';
+import { Table, Button, Space, Input } from 'antd';
 import { useApp } from '../../contexts/appContext';
 import EditRowModal from '../../components/EditRowModal';
 import SqlSubmitModal from '../../components/SqlSubmitModal';
+import TerminalAlert from '../../components/TerminalAlert';
 import { SettingOutlined, SearchOutlined } from '@ant-design/icons';
+import TerminalTextInput from '../../components/TerminalTextInput';
 
 export default function SqlPage() {
   const { id } = useParams();
@@ -450,12 +452,11 @@ export default function SqlPage() {
             </>
           )}
           {queryError && (
-            <Alert 
+            <TerminalAlert 
               message="Query Error" 
               description={queryError} 
               type="error" 
               showIcon 
-              style={{ marginBottom: 16, background: '#2d1d1d', borderColor: '#4d2d2d', color: '#ff9d9d' }}
             />
           )}
           {queryLoading ? (
@@ -472,24 +473,13 @@ export default function SqlPage() {
                   {columnNames.map(key => (
                     <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <span style={{ color: '#b7d3bd', fontSize: 12 }}>{key}:</span>
-                      <Input
+                      <TerminalTextInput
                         placeholder="搜索"
-                        prefix={<SearchOutlined style={{ color: '#8dff9d' }} />}
-                        style={{
-                          width: 160,
-                          fontSize: 12,
-                          background: '#1a241e',
-                          border: '1px solid #2f5c39',
-                          borderRadius: 4,
-                          color: '#b7d3bd',
-                          '&:hover, &:focus': {
-                            borderColor: '#8dff9d',
-                          }
-                        }}
-                        onChange={(e) => {
+                        style={{minWidth:"50px"}}
+                        onChange={(value) => {
                           const newFilters = { ...filters };
-                          if (e.target.value) {
-                            newFilters[key] = e.target.value;
+                          if (value) {
+                            newFilters[key] = value;
                           } else {
                             delete newFilters[key];
                           }

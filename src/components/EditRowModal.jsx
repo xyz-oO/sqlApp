@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Input, Button } from 'antd';
+import Button from 'antd/es/button';
+import TerminalTextInput from './TerminalTextInput';
 import styles from '../themes/terminal.less';
 
 export default function EditRowModal({
@@ -43,7 +44,7 @@ export default function EditRowModal({
 
   return (
     <div className={styles.terminalModalOverlay}>
-      <div className={styles.terminalModalCard}>
+      <div className={styles.terminalModalCard}   style={{ width: '600px' }}>
         <div className={styles.terminalModalHeader}>
           <h3>编辑行数据</h3>
           <button
@@ -58,14 +59,12 @@ export default function EditRowModal({
           {dataColumns.map(col => {
             const fieldKey = col.dataIndex || col.key;
             return (
-              <div key={col.key} className={styles.terminalModalField}>
+              <div key={col.key} style={{margin: "24px 0"}}>
                 <label>{col.title}</label>
-                <Input
-                  className={styles.terminalInput}
+                <TerminalTextInput
                   placeholder={col.title}
-                  spellCheck={false}
                   value={formData[fieldKey] !== undefined ? formData[fieldKey] : ''}
-                  onChange={(e) => handleFieldChange(fieldKey, e.target.value)}
+                  onChange={(value) => handleFieldChange(fieldKey, value)}
                 />
               </div>
             );

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, request } from 'umi';
-import { Button, Card, Input, Switch, Table } from 'antd';
+import { Button, Card, Switch, Table } from 'antd';
+import TerminalTextInput from '../components/TerminalTextInput';
 import styles from '../themes/terminal.less';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import NewUserModal from '../components/NewUserModal';
@@ -214,11 +215,10 @@ export default function UserManagerPage() {
           </div>
           <div className={styles.dashboardSearch}>
             <div className={styles.searchLabel}>搜索</div>
-            <Input
+            <TerminalTextInput
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              allowClear
-              className={styles.terminalInput}
+              onChange={setQuery}
+              placeholder="Search users"
             />
           </div>
           <Card style={{ marginTop: 16, background: '#0a110d', borderColor: '#1f2f23' }}>

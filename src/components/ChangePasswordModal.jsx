@@ -1,7 +1,5 @@
-import { Input, Typography } from 'antd';
+import TerminalPasswordInput from './TerminalPasswordInput';
 import styles from '../themes/terminal.less';
-
-const { Text } = Typography;
 
 export default function ChangePasswordModal({
   open,
@@ -40,16 +38,11 @@ export default function ChangePasswordModal({
           </div>
           <div>
             {/* <Text style={{color:'yellow'}}>New Password</Text> */}
-            <div style={{ marginTop: 56 }} className={styles.terminalModalField}>
-               <Input.Password
+            <div style={{ marginTop: 56 }} >
+               <TerminalPasswordInput
                     value={value}
-                    size="large"
-                    onChange={(event) => onChange(event.target.value)}
+                    onChange={onChange}
                     placeholder="请输入新密码"
-                    spellCheck={false}
-                    iconRender={(visible) => (
-                      <span style={{ fontSize: '20px' }}>{visible ? '👁️':'🙈' }</span>
-                    )}
                     style={{minWidth:"560px"}}
                   />
             </div>

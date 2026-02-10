@@ -1,7 +1,7 @@
-import { Input, Typography } from 'antd';
+import { useState } from 'react';
+import TerminalTextInput from './TerminalTextInput';
+import TerminalPasswordInput from './TerminalPasswordInput';
 import styles from '../themes/terminal.less';
-
-const { Text } = Typography;
 
 export default function NewUserModal({
   open,
@@ -14,6 +14,7 @@ export default function NewUserModal({
   saving,
   error,
 }) {
+ 
   if (!open) {
     return null;
   }
@@ -33,33 +34,26 @@ export default function NewUserModal({
               </div>
               <div className={styles.terminalModalBody}>
                
-                <div className={styles.terminalModalField} >
+                <div style={{ margin: '24px 0' }}>
                   {/* <Text>Username</Text> */}
-                  <Input
+                  <TerminalTextInput
                     value={username}
-                    onChange={(event) => onUsernameChange(event.target.value)}
+                    onChange={onUsernameChange}
                     placeholder="用户名"
-                    size="large"
-                    disabled={false}
-                    spellCheck={false}
                     style={{width:"560px"}}
                   />
                 </div>
-                <div className={styles.terminalModalField}>
+                <div style={{ margin: '24px 0' }}>
                   {/* <Text>Password</Text> */}
-                  <Input.Password
+                  <TerminalPasswordInput
                     value={password}
-                    size="large"
-                    onChange={(event) => onPasswordChange(event.target.value)}
+                    onChange={onPasswordChange}
                     placeholder="密码"
-                    disabled={false}
-                    spellCheck={false}
-                    iconRender={(visible) => (
-                      <span style={{ fontSize: '20px' }}>{visible ? '👁️':'🙈' }</span>
-                    )}
                     style={{minWidth:"560px"}}
                   />
                 </div>
+
+                
                  
                 {error ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{error}</div> : null}
               </div>

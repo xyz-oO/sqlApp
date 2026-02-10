@@ -1,0 +1,16 @@
+[
+  {
+    "id": "c78ce6d9-6981-4c5b-bd61-df37ae4ae917",
+    "menu_name": "notes table",
+    "sql": "select user_id,status,lang,subject,title from notes;",
+    "dbname": "tydb",
+    "created_at": "2026-02-10T04:51:08.209254Z"
+  },
+  {
+    "id": "f736b38f-bbab-4189-a4d3-9bc4ca7d507c",
+    "menu_name": "user table",
+    "sql": "select nickname,user_role,login_count from users;",
+    "dbname": "tydb",
+    "created_at": "2026-02-10T06:32:54.051494Z"
+  }
+]

@@ -13,7 +13,12 @@ export default defineConfig({
     { path: "/:sessionId", component: "home" },
     { path: "/sql/:id", component: "sql/[id]" },
   ],
-  
+  // target:{
+  //   chrome: 75
+  // },
+  // antd:{
+  //   import: true, style: "css",
+  // },
   npmClient: 'pnpm',
   proxy: {
     '/api': {
