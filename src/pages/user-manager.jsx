@@ -1,16 +1,19 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, request } from 'umi';
+import { Link, request, history } from 'umi';
 import { Button, Card, Switch, Table } from 'antd';
 import TerminalTextInput from '../components/TerminalTextInput';
+import TerminalAlert from '../components/TerminalAlert';
+import TerminalSelect from '../components/TerminalSelect';
 import styles from '../themes/terminal.less';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import NewUserModal from '../components/NewUserModal';
 import SidebarNav from '../components/SidebarNav';
+import { useApp } from '../contexts/appContext';
 
 export default function UserManagerPage() {
+  const { session, sessionChecked } = useApp();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
-  const [collapsed, setCollapsed] = useState(false);
   const [query, setQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
   const [passwordModalOpen, setPasswordModalOpen] = useState(false);
@@ -20,21 +23,39 @@ export default function UserManagerPage() {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [createUsername, setCreateUsername] = useState('');
   const [createPassword, setCreatePassword] = useState('');
+  const [createRole, setCreateRole] = useState('USER');
   const [createSaving, setCreateSaving] = useState(false);
   const [createError, setCreateError] = useState('');
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  const [editRole, setEditRole] = useState('USER');
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [successNotice, setSuccessNotice] = useState('');
 
   useEffect(() => {
-    const loadUsers = async () => {
-      setLoading(true);
-      try {
-        const data = await request('/users');
-        setUsers(data?.users || []);
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadUsers();
-  }, []);
+    // Check if user is not SUPER role
+    if (sessionChecked && session?.role !== 'SUPER') {
+      // Redirect to home page or show error
+      history.push('/');
+    }
+  }, [session, sessionChecked, history]);
+
+  useEffect(() => {
+    // Only load users if user is SUPER role
+    if (session?.role === 'SUPER') {
+      const loadUsers = async () => {
+        setLoading(true);
+        try {
+          const data = await request('/users');
+          setUsers(data?.users || []);
+        } finally {
+          setLoading(false);
+        }
+      };
+      loadUsers();
+    }
+  }, [session]);
 
   const filteredUsers = useMemo(() => {
     const value = query.trim().toLowerCase();
@@ -60,7 +81,7 @@ export default function UserManagerPage() {
 
   const handlePasswordSave = async () => {
     if (!newPassword.trim()) {
-      setSaveError('Please enter a new password.');
+      setSaveError('请输入新密码。');
       return;
     }
     setSaving(true);
@@ -73,8 +94,14 @@ export default function UserManagerPage() {
       setPasswordModalOpen(false);
       setSelectedUser(null);
       setNewPassword('');
+      // Set success notice
+      setSuccessNotice('修改密码成功！');
+      // Clear success notice after 3 seconds
+      setTimeout(() => {
+        setSuccessNotice('');
+      }, 3000);
     } catch (error) {
-      setSaveError('Failed to update password.');
+      setSaveError('更新密码失败。');
     } finally {
       setSaving(false);
     }
@@ -83,6 +110,7 @@ export default function UserManagerPage() {
   const openCreateModal = () => {
     setCreateUsername('');
     setCreatePassword('');
+    setCreateRole('USER');
     setCreateError('');
     setCreateModalOpen(true);
   };
@@ -91,12 +119,58 @@ export default function UserManagerPage() {
     setCreateModalOpen(false);
     setCreateUsername('');
     setCreatePassword('');
+    setCreateRole('USER');
     setCreateError('');
+  };
+
+  const openEditModal = (user) => {
+    setEditingUser(user);
+    setEditRole(user.role || 'USER');
+    setEditError('');
+    setEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setEditingUser(null);
+    setEditRole('USER');
+    setEditError('');
+  };
+
+  const handleEditRole = async () => {
+    if (!editingUser) {
+      return;
+    }
+    setEditSaving(true);
+    setEditError('');
+    try {
+      // Update user role in backend
+      await request(`/users/${editingUser.username}/role`, {
+        method: 'POST',
+        data: { role: editRole },
+      });
+      // Reload users
+      const updatedUsers = await request('/users');
+      setUsers(updatedUsers?.users || []);
+      setEditModalOpen(false);
+      setEditingUser(null);
+      setEditRole('USER');
+      // Set success notice
+      setSuccessNotice('角色更新成功！');
+      // Clear success notice after 3 seconds
+      setTimeout(() => {
+        setSuccessNotice('');
+      }, 3000);
+    } catch (error) {
+      setEditError('更新角色失败。');
+    } finally {
+      setEditSaving(false);
+    }
   };
 
   const handleCreateUser = async () => {
     if (!createUsername.trim() || !createPassword.trim()) {
-      setCreateError('Please enter username and password.');
+      setCreateError('请输入用户名和密码。');
       return;
     }
     setCreateSaving(true);
@@ -104,18 +178,24 @@ export default function UserManagerPage() {
     try {
       await request('/users', {
         method: 'POST',
-        data: { username: createUsername.trim(), password: createPassword },
+        data: { username: createUsername.trim(), password: createPassword, role: createRole },
       });
       const data = await request('/users');
       setUsers(data?.users || []);
       setCreateModalOpen(false);
       setCreateUsername('');
       setCreatePassword('');
+      // Set success notice
+      setSuccessNotice('新增用户成功！');
+      // Clear success notice after 3 seconds
+      setTimeout(() => {
+        setSuccessNotice('');
+      }, 3000);
     } catch (error) {
       if (error?.response?.status === 409) {
-        setCreateError('User already exists.');
+        setCreateError('用户已存在。');
       } else {
-        setCreateError('Failed to create user.');
+        setCreateError('创建用户失败。');
       }
     } finally {
       setCreateSaving(false);
@@ -147,12 +227,17 @@ export default function UserManagerPage() {
         render: (_, __, index) => index + 1,
       },
       {
-        title: 'Username',
+        title: '用户名',
         dataIndex: 'username',
         key: 'username',
       },
       {
-        title: 'Status',
+        title: '角色',
+        dataIndex: 'role',
+        key: 'role',
+      },
+      {
+        title: '状态',
         dataIndex: 'status',
         key: 'status',
         render: (value, record) => (
@@ -164,41 +249,69 @@ export default function UserManagerPage() {
         ),
       },
       {
-        title: 'Action',
+        title: '操作',
         key: 'action',
         render: (_, record) => (
-          <Button
-            className={styles.secondaryButton}
-            type="button"
-            onClick={() => openPasswordModal(record)}
-          >
-            change password
-          </Button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button
+              className={styles.secondaryButton}
+              type="button"
+              onClick={() => openEditModal(record)}
+            >
+              编辑
+            </Button>
+            <Button
+              className={styles.secondaryButton}
+              type="button"
+              onClick={() => openPasswordModal(record)}
+            >
+              修改密码
+            </Button>
+          </div>
         ),
       },
     ],
     [],
   );
 
+  // Check if session is being checked or user is not SUPER
+  if (!sessionChecked) {
+    return (
+      <div className={styles.page}>
+        <div className={styles.terminalCard}>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (session?.role !== 'SUPER') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.terminalCard}>
+          <h2>Access Denied</h2>
+          <p>You do not have permission to access this page.</p>
+          <p>Only SUPER role users can manage users.</p>
+          <Link to="/" className={styles.primaryButton} style={{ marginTop: '16px', display: 'inline-block' }}>
+            Go Home
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className={styles.dashboard}>
-        <aside
-          className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ''}`}
-        >
-          <div className={styles.sidebarHeader}>
-            <span>System</span>
-            <button
-              className={styles.sidebarToggle}
-              type="button"
-              onClick={() => setCollapsed((value) => !value)}
-            >
-              {collapsed ? '>' : '<'}
-            </button>
-          </div>
-          <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
-        </aside>
+        <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
         <section className={styles.dashboardContent}>
+          {/* <TerminalAlert message={"create user success"} type="success" showIcon={true} description="用户创建成功"/> */}
+
+          {successNotice && (
+            <div style={{ marginBottom: 16 }}>
+              <TerminalAlert message={successNotice} type="success" showIcon={true} />
+            </div>
+          )}
           <div className={styles.dashboardHeader}>
             <div className={styles.dashboardHeaderRow}>
               <div>
@@ -218,10 +331,10 @@ export default function UserManagerPage() {
             <TerminalTextInput
               value={query}
               onChange={setQuery}
-              placeholder="Search users"
+              placeholder="搜索用户"
             />
           </div>
-          <Card style={{ marginTop: 16, background: '#0a110d', borderColor: '#1f2f23' }}>
+          <Card style={{ marginTop: 32 }} className={styles.terminalCard}>
             <Table
               rowKey="username"
               columns={columns}
@@ -251,13 +364,83 @@ export default function UserManagerPage() {
             open={createModalOpen}
             username={createUsername}
             password={createPassword}
+            role={createRole}
             onUsernameChange={setCreateUsername}
             onPasswordChange={setCreatePassword}
+            onRoleChange={setCreateRole}
             onCancel={closeCreateModal}
             onSave={handleCreateUser}
             saving={createSaving}
             error={createError}
           />
+          {editModalOpen && (
+            <div className={styles.terminalModalOverlay} onClick={closeEditModal}>
+              <div
+                className={styles.terminalModalCard}
+                style={{ width: '600px' }}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <div className={styles.terminalModalHeader}>
+                  <span>编辑用户角色</span>
+                  <button className={styles.terminalModalClose} type="button" onClick={closeEditModal}>
+                    ×
+                  </button>
+                </div>
+                <div className={styles.terminalModalBody}>
+                  <div style={{ margin: '16px 0' }}>
+                    <div style={{ marginBottom: 8, fontSize: 14, color: '#f0f6fc' }}>
+                      用户名:
+                    </div>
+                    <div style={{ 
+                      padding: '12px', 
+                      backgroundColor: '#0d1117', 
+                      border: '1px solid #30363d', 
+                      borderRadius: '8px',
+                      color: '#f0f6fc',
+                      fontFamily: 'SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace',
+                      fontSize: '14px'
+                    }}>
+                      {editingUser?.username}
+                    </div>
+                  </div>
+                  <div style={{ margin: '24px 0' }}>
+                    <div style={{ marginBottom: 8, fontSize: 14, color: '#f0f6fc' }}>
+                      角色:
+                    </div>
+                    <TerminalSelect
+                      value={editRole}
+                      onChange={setEditRole}
+                      options={[
+                        { value: 'USER', label: 'USER' },
+                        { value: 'SUPER', label: 'SUPER' }
+                      ]}
+                      placeholder="选择角色"
+                      style={{ width: '560px' }}
+                    />
+                  </div>
+                  {editError ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{editError}</div> : null}
+                </div>
+                <div className={styles.terminalModalFooter}>
+                  <button
+                    type="button"
+                    className={styles.terminalButton}
+                    onClick={closeEditModal}
+                    disabled={editSaving}
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.terminalPrimaryButton}
+                    onClick={handleEditRole}
+                    disabled={editSaving}
+                  >
+                    {editSaving ? '保存中...' : '保存'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </section>
       </div>
       <footer className={styles.footer}>

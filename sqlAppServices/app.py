@@ -8,6 +8,7 @@ import jwt
 from sqlalchemy import create_engine, text
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+import base64
 
 app = Flask(__name__)
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:8000")
@@ -63,6 +64,40 @@ def _md5(value: str) -> str:
     return hashlib.md5(value.encode("utf-8")).hexdigest()
 
 
+def _get_encryption_key():
+    key_bytes = USER_SECRET.encode("utf-8")
+    key_bytes = key_bytes.ljust(32, b'\0')[:32]
+    return key_bytes
+
+
+def _encrypt_password(password: str) -> str:
+    if not password:
+        return ""
+    key = _get_encryption_key()
+    password_bytes = password.encode("utf-8")
+    # XOR encryption
+    encrypted_bytes = bytearray()
+    for i in range(len(password_bytes)):
+        encrypted_bytes.append(password_bytes[i] ^ key[i % len(key)])
+    return base64.b64encode(encrypted_bytes).decode("utf-8")
+
+
+def _decrypt_password(encrypted_password: str) -> str:
+    if not encrypted_password:
+        return ""
+    try:
+        key = _get_encryption_key()
+        encrypted_bytes = base64.b64decode(encrypted_password.encode("utf-8"))
+        # XOR decryption
+        decrypted_bytes = bytearray()
+        for i in range(len(encrypted_bytes)):
+            decrypted_bytes.append(encrypted_bytes[i] ^ key[i % len(key)])
+        return decrypted_bytes.decode("utf-8")
+    except Exception:
+        # If decryption fails (e.g., old unencrypted password), return as-is
+        return encrypted_password
+
+
 def _load_db_config(username):
     try:
         path = os.path.join(USERS_DIR, username, "dbconfig.json")
@@ -70,8 +105,17 @@ def _load_db_config(username):
             data = json.load(file)
             # If data is a dict (old format), convert to list
             if isinstance(data, dict):
-                return [data] if data else []
-            return data
+                configs = [data] if data else []
+            else:
+                configs = data
+            # Decrypt passwords
+            decrypted_configs = []
+            for config in configs:
+                decrypted_config = config.copy()
+                if "password" in decrypted_config:
+                    decrypted_config["password"] = _decrypt_password(decrypted_config["password"])
+                decrypted_configs.append(decrypted_config)
+            return decrypted_configs
     except FileNotFoundError:
         return []
 
@@ -79,8 +123,14 @@ def _load_db_config(username):
 def _save_db_config(username, configs):
     os.makedirs(os.path.join(USERS_DIR, username), exist_ok=True)
     path = os.path.join(USERS_DIR, username, "dbconfig.json")
+    encrypted_configs = []
+    for config in configs:
+        encrypted_config = config.copy()
+        if "password" in encrypted_config:
+            encrypted_config["password"] = _encrypt_password(encrypted_config["password"])
+        encrypted_configs.append(encrypted_config)
     with open(path, "w", encoding="utf-8") as file:
-        json.dump(configs, file, indent=2)
+        json.dump(encrypted_configs, file, indent=2)
 
 
 def _load_sql_config(username):
@@ -119,6 +169,15 @@ def _get_username_from_request():
     return None
 
 
+def _check_super_role():
+    username = _get_username_from_request()
+    if not username:
+        return False
+    users = _load_users()
+    user = next((item for item in users if item.get("username") == username), None)
+    return user and user.get("role") == "SUPER"
+
+
 @app.post("/api/login")
 def login():
     payload = request.get_json(silent=True) or {}
@@ -142,14 +201,17 @@ def login():
         "username": username,
         "expiresAt": _expire_at().isoformat() + "Z",
     }
+    role = user.get("role") if user else "USER"
+    
     token = _encode_session(
         {
             "sessionId": session_id,
             "username": username,
+            "role": role,
             "exp": _now() + timedelta(seconds=COOKIE_MAX_AGE_SECONDS),
         }
     )
-    response = jsonify({"sessionId": session_id})
+    response = jsonify({"sessionId": session_id, "role": role})
     response.set_cookie(
         "sessionId",
         token,
@@ -199,7 +261,14 @@ def get_session():
         response = jsonify({"ok": False})
         response.delete_cookie("sessionId")
         return response
-    return jsonify({"ok": True, "sessionId": session_id, "username": session["username"]})
+    
+    # Get user role
+    username = session["username"]
+    users = _load_users()
+    user = next((item for item in users if item.get("username") == username), None)
+    role = user.get("role") if user else "USER"
+    
+    return jsonify({"ok": True, "sessionId": session_id, "username": username, "role": role})
 
 
 @app.get("/api/health")
@@ -209,12 +278,16 @@ def health():
 
 @app.get("/api/users")
 def get_users():
+    if not _check_super_role():
+        return jsonify({"error": "unauthorized, only SUPER role can access"}), 403
     users = _load_users()
     return jsonify({"users": users})
 
 
 @app.post("/api/users/<username>/password")
 def update_user_password(username):
+    if not _check_super_role():
+        return jsonify({"error": "unauthorized, only SUPER role can access"}), 403
     payload = request.get_json(silent=True) or {}
     new_password = payload.get("password") or ""
     if not new_password:
@@ -232,6 +305,8 @@ def update_user_password(username):
 
 @app.post("/api/users")
 def create_user():
+    if not _check_super_role():
+        return jsonify({"error": "unauthorized, only SUPER role can access"}), 403
     payload = request.get_json(silent=True) or {}
     username = (payload.get("username") or "").strip()
     password = payload.get("password") or ""
@@ -242,10 +317,16 @@ def create_user():
     if any(item.get("username") == username for item in users):
         return jsonify({"error": "user already exists"}), 409
 
+    role = payload.get("role") or "USER"
+    # Validate role
+    if role not in ["USER", "SUPER"]:
+        role = "USER"
+    
     new_user = {
         "username": username,
         "md5": _md5(f"{password}{USER_SECRET}"),
         "status": 0,
+        "role": role,
     }
     users.append(new_user)
     _save_users(users)
@@ -255,6 +336,8 @@ def create_user():
 
 @app.post("/api/users/<username>/status")
 def update_user_status(username):
+    if not _check_super_role():
+        return jsonify({"error": "unauthorized, only SUPER role can access"}), 403
     payload = request.get_json(silent=True) or {}
     status = payload.get("status")
     if status not in (0, 1):
@@ -266,6 +349,26 @@ def update_user_status(username):
         return jsonify({"error": "user not found"}), 404
 
     user["status"] = status
+    _save_users(users)
+    return jsonify({"ok": True})
+
+
+@app.post("/api/users/<username>/role")
+def update_user_role(username):
+    if not _check_super_role():
+        return jsonify({"error": "unauthorized, only SUPER role can access"}), 403
+    payload = request.get_json(silent=True) or {}
+    role = payload.get("role") or "USER"
+    # Validate role
+    if role not in ["USER", "SUPER"]:
+        role = "USER"
+
+    users = _load_users()
+    user = next((item for item in users if item.get("username") == username), None)
+    if not user:
+        return jsonify({"error": "user not found"}), 404
+
+    user["role"] = role
     _save_users(users)
     return jsonify({"ok": True})
 

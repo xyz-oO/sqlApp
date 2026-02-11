@@ -6,26 +6,11 @@ import SidebarNav from '../components/SidebarNav';
 
 export default function HomeDashboard() {
   const { session } = useApp();
-  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <>
       <div className={styles.dashboard}>
-        <aside
-          className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ''}`}
-        >
-          <div className={styles.sidebarHeader}>
-            <span>System</span>
-            <button
-              className={styles.sidebarToggle}
-              type="button"
-              onClick={() => setCollapsed((value) => !value)}
-            >
-              {collapsed ? '>' : '<'}
-            </button>
-          </div>
-          <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
-        </aside>
+        <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
         <section className={styles.dashboardContent}>
           <h2 className={styles.dashboardTitle}>logined home</h2>
           <p className={styles.dashboardSubtitle}>

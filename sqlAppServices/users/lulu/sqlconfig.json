@@ -1,16 +1,16 @@
 [
   {
-    "id": "c78ce6d9-6981-4c5b-bd61-df37ae4ae917",
-    "menu_name": "notes table",
+    "id": "d3775cd5-8f6a-4209-8df0-8f7f97c1aa2d",
+    "menu_name": "mytable8",
     "sql": "select user_id,status,lang,subject,title from notes;",
     "dbname": "tydb",
-    "created_at": "2026-02-10T04:51:08.209254Z"
+    "created_at": "2026-02-11T02:28:52.344477Z"
   },
   {
-    "id": "f736b38f-bbab-4189-a4d3-9bc4ca7d507c",
+    "id": "2abd28e7-4870-4da1-958d-8faf221e9f56",
     "menu_name": "user table",
     "sql": "select nickname,user_role,login_count from users;",
     "dbname": "tydb",
-    "created_at": "2026-02-10T06:32:54.051494Z"
+    "created_at": "2026-02-11T03:01:03.592586Z"
   }
 ]

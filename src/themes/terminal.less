@@ -1,6 +1,42 @@
+// Color variables
+@color-black: #000000;
+@color-darkest: #050705;
+@color-darker: #070a08;
+@color-dark: #0a110d;
+@color-bg: #0b0f0c;
+@color-bg-light: #0c1510;
+@color-bg-lighter: #132817;
+@color-primary: #8dff9d;
+@color-primary-hover: #b4ffc0;
+@color-text: #b7d3bd;
+@color-text-secondary: #7ea687;
+@color-text-light: #d8e6d8;
+@color-border: #1a1f1b;
+@color-border-dark: #142017;
+@color-border-medium: #1f2f23;
+@color-border-light: #2f5c39;
+@color-border-lighter: #4b7a5a;
+@color-error: #ff9a9a;
+@color-error-bg: #2a0c0c;
+@color-error-border: #5b1b1b;
+@color-success: #00ff00;
+@color-success-bg: #0a2a0a;
+@color-success-border: #00ff00;
+@color-warning: #ffd79a;
+@color-warning-bg: #2d2d1d;
+@color-warning-border: #4d4d2d;
+@color-info: #9a9aff;
+@color-info-bg: #1d1d2d;
+@color-info-border: #2d2d4d;
+@color-scrollbar: #4b5cff;
+
+// Font variables
+@font-family-mono: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+@font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+
 .wrapper {
   min-height: 100vh;
-  background: #000000;
+  background: @color-black;
 }
 
 .topbar {
@@ -8,8 +44,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: #000000;
-  border-bottom: 1px solid #1a1f1b;
+  background: @color-black;
+  border-bottom: 1px solid @color-border;
 }
 
 .navs {
@@ -21,12 +57,12 @@
 }
 
 .navs a {
-  color: #8dff9d;
+  color: @color-primary;
   text-decoration: none;
 }
 
 .navs a:hover {
-  color: #b4ffc0;
+  color: @color-primary-hover;
 }
 
 .sessionStatus {
@@ -34,16 +70,25 @@
   align-items: center;
   gap: 10px;
   font-size: 14px;
-  color: #b7d3bd;
+  color: @color-text;
 }
 
 .loadingText {
-  color: #8dff9d;
+  color: @color-primary;
   font-weight: 600;
 }
 
 .sessionText {
-  color: #7ea687;
+  color: @color-text-secondary;
+}
+.sessionBorder{
+  border: 1px solid @color-border-light;
+}
+.sessionHighlightText{
+  color: @color-primary;
+}
+.sessionBackground{
+  background: @color-bg;
 }
 
 .avatarWrapper {
@@ -64,9 +109,9 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: #132817;
-  border: 1px solid #2f5c39;
-  color: #8dff9d;
+  background: @color-bg-lighter;
+  border: 1px solid @color-border-light;
+  color: @color-primary;
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -84,8 +129,8 @@
   top: 100%;
   right: 0;
   min-width: 160px;
-  background: #050705;
-  border: 1px solid #142017;
+  background: @color-darkest;
+  border: 1px solid @color-border-dark;
   border-radius: 10px;
   padding: 12px;
   opacity: 0;
@@ -107,14 +152,14 @@
 }
 
 .avatarName {
-  color: #b7d3bd;
+  color: @color-text;
   font-size: 13px;
 }
 
 .avatarAction {
   background: transparent;
-  border: 1px solid #2f5c39;
-  color: #8dff9d;
+  border: 1px solid @color-border-light;
+  color: @color-primary;
   border-radius: 8px;
   padding: 8px 10px;
   cursor: pointer;
@@ -123,24 +168,42 @@
 }
 
 .avatarAction:hover {
-  border-color: #4b7a5a;
+  border-color: @color-border-lighter;
+}
+.terminalTableHeader{
+  color: @color-primary;
+}
+.terminalText2{
+  color: @color-primary;
 }
 
+.terminalText{
+  // color: @color-primary;
+  color:@color-text;
+}
 
+.terminalResultTextError{
+  color: @color-error;
+}
+
+.terminalCard{
+   background: @color-dark;
+   border-color: @color-border-medium;
+}
 .terminalTable :global(.ant-table-thead > tr > th) {
-  background: #0a110d;
-  color: #8dff9d;
-  border-bottom: 1px solid #1f2f23;
+  background: @color-dark;
+  color: @color-primary;
+  border-bottom: 1px solid @color-border-medium;
 }
 .terminalTable :global(.ant-table-tbody > tr > td){
-  background: #0a110d;
-  border-bottom: 1px solid #1f2f23;
-  color: #b7d3bd;
+  background: @color-dark;
+  border-bottom: 1px solid @color-border-medium;
+  color: @color-text;
 }
 
 
 .terminalTable :global(.ant-table-tbody > tr:hover > td) {
-  background: #0c1510 !important;
+  background: @color-bg-light !important;
 }
 
 .terminalTable :global(.ant-pagination-item a),
@@ -148,7 +211,7 @@
 .terminalTable :global(.ant-pagination-next .ant-btn a),
 .terminalTable :global(.ant-pagination-jump-prev .ant-btn a),
 .terminalTable :global(.ant-pagination-jump-next .ant-btn a) {
-  color: #8dff9d !important;
+  color: @color-primary !important;
 
 }
 
@@ -157,14 +220,14 @@
 .terminalTable :global(.ant-pagination-next .ant-btn),
 .terminalTable :global(.ant-pagination-jump-prev .ant-btn),
 .terminalTable :global(.ant-pagination-jump-next .ant-btn) {
-  background: #0a110d;
-  color: #8dff9d !important;
-  border-color: #4b7a5a;
+  background: @color-dark;
+  color: @color-primary !important;
+  border-color: @color-border-lighter;
 }
 
 .terminalTable :global(.ant-pagination-item-active) {
-  background: #0a110d;
-  border-color: #4b7a5a;
+  background: @color-dark;
+  border-color: @color-border-lighter;
 }
 
 .terminalTable :global(.ant-pagination-item:hover),
@@ -172,82 +235,42 @@
 .terminalTable :global(.ant-pagination-next .ant-btn:hover),
 .terminalTable :global(.ant-pagination-jump-prev .ant-btn:hover),
 .terminalTable :global(.ant-pagination-jump-next .ant-btn:hover) {
-  background: #0a110d;
-  border-color: #8dff9d;
-  color: #8dff9d;
+  background: @color-dark;
+  border-color: @color-primary;
+  color: @color-primary;
 }
 
 .terminalTable :global(.ant-pagination-item-ellipsis),
 .terminalTable :global(.ant-pagination-item-ellipsis:hover) {
-  color: #8dff9d !important;
+  color: @color-primary !important;
 }
-
-// .terminalTable :global(.ant-select-content-value) {
-//   background: #1e2b1f !important;
-//   color: #8dff9d !important;
-//   border: #4b7a5a !important;
-// }
 
 .terminalTable :global(.ant-pagination-options) {
-  background: #1e2b1f !important;
+  background: @color-border-medium !important;
   padding: 1px;
   border-radius: 4px;
-  border:#049417 !important;
+  border:@color-border-lighter !important;
 }
 
-// .terminalTable :global(.ant-select),
-// .terminalTable :global(.ant-select-selector),
-// .terminalTable :global(.ant-select-dropdown) {
-//   background: #0b0f0c !important;
-//   color: black !important;
-//   border: red !important;
-// }
 
 .terminalTable :global(.ant-select-item-option-content) {
-  color: #8dff9d !important;
+  color: @color-primary !important;
   // background: yellow !important;
-  background:#1e2b1f !important;
-  border: 1px solid #1e2b1f;
+  background:@color-border-medium !important;
+  border: 1px solid @color-border-medium;
 }
 
 .terminalTable :global(.ant-select-item) {
   // background: red !important;
-  background: #1e2b1f !important;
-  border: 1px solid #4b7a5a;
+  background: @color-border-medium !important;
+  border: 1px solid @color-border-lighter;
 }
 
-// .terminalModal :global(.ant-modal-content) {
-//   background: #0b0f0c;
-//   border: 1px solid #1e2b1f;
-//   color: #b7d3bd;
-// }
-
-// .terminalModal :global(.ant-modal-body) {
-//   background: #0b0f0c !important;
-// }
-
-// .terminalModal :global(.ant-modal-header) {
-//   background: #0b0f0c;
-//   border-bottom: 1px solid #1e2b1f;
-// }
-
-// .terminalModal :global(.ant-modal-title) {
-//   color: #8dff9d;
-// }
-
-// .terminalModal :global(.ant-modal-close) {
-//   color: #8dff9d;
-// }
-
-// .terminalModal :global(.ant-modal-footer) {
-//   background: #0b0f0c;
-//   border-top: 1px solid #1e2b1f;
-// }
 
 .terminalModal :global(.ant-btn) {
-  background: #0c1510;
-  border-color: #2f5c39;
-  color: #8dff9d;
+  background: @color-bg-light;
+  border-color: @color-border-light;
+  color: @color-primary;
 }
 
 
@@ -263,10 +286,10 @@
 
 .terminalModalCard {
   width: min(700px, 92vw);
-  background: #0b0f0c;
-  border: 1px solid #1e2b1f;
+  background: @color-bg;
+  border: 1px solid @color-border-medium;
   border-radius: 12px;
-  color: #b7d3bd;
+  color: @color-text;
   box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
 }
 
@@ -275,8 +298,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid #1e2b1f;
-  color: #8dff9d;
+  border-bottom: 1px solid @color-border-medium;
+  color: @color-primary;
 }
 
 .terminalModalBody {
@@ -295,21 +318,21 @@
   justify-content: flex-end;
   gap: 10px;
   padding: 12px 16px 16px;
-  border-top: 1px solid #1e2b1f;
+  border-top: 1px solid @color-border-medium;
 }
 
 .terminalModalClose {
   background: transparent;
   border: none;
-  color: #8dff9d;
+  color: @color-primary;
   font-size: 18px;
   cursor: pointer;
 }
 
 .terminalButton {
-  background: #0c1510;
-  border: 1px solid #2f5c39;
-  color: #8dff9d;
+  background: @color-bg-light;
+  border: 1px solid @color-border-light;
+  color: @color-primary;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
@@ -317,9 +340,9 @@
 }
 
 .terminalPrimaryButton {
-  background: #132817;
-  border: 1px solid #2f5c39;
-  color: #8dff9d;
+  background: @color-bg-lighter;
+  border: 1px solid @color-border-light;
+  color: @color-primary;
   border-radius: 8px;
   padding: 8px 12px;
   cursor: pointer;
@@ -341,46 +364,45 @@
   padding-right: 48px; 
   font-size: 16px;
   border-radius: 8px; 
-  background: #132817;
-  border: 1px solid #2f5c39;
-  color: #8dff9d;
+  background: @color-bg-lighter;
+  border: 1px solid @color-border-light;
+  color: @color-primary;
 }
 .terminalPasswordField:focus{
   outline: none !important;
   box-shadow: none !important;
-  border: 1px solid #8dff9d !important;
+  border: 1px solid @color-primary !important;
 }
 .teriminalInputField:focus{
   outline: none !important;
   box-shadow: none !important;
-  border: 1px solid #8dff9d !important;
+  border: 1px solid @color-primary !important;
 }
 .terminalTextArea{
     width: 100%;
-    background: #132817;
-    border: 1px solid #2f5c39;
+    background: @color-bg-lighter;
+    border: 1px solid @color-border-light;
     border-radius: 8px;
     padding: 12px;
-    color: #8dff9d;
-    font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
+    color: @color-primary;
+    font-family: @font-family-mono;
     resize: vertical;
     
 }
 .terminalTextArea::placeholder {
-  color: #7ea687;
+  color: @color-text-secondary;
 }
 
 .terminalTextArea:focus {
   outline: none;
   box-shadow: none;
-  border: 1px solid #8dff9d;
+  border: 1px solid @color-primary;
 }
 
 .terminalEyeButton {
   background: transparent;
   border: none;
-  color: #8dff9d;
+  color: @color-primary;
   cursor: pointer;
   font-size: 16px;
 }
@@ -390,11 +412,9 @@
   left: 50%;
   transform: translateX(-50%);
   top: 84px;
-  background: #0b0f0c;
-  // border: 1px solid #1e2b1f;
-  // color: #8dff9d;
-  border: 1px solid orange;
-  color: orange;
+  background: @color-bg;
+  border: 1px solid @color-warning-border;
+  color: @color-warning;
   padding: 10px 14px;
   border-radius: 10px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
@@ -415,29 +435,29 @@
 }
 
 .statusSwitch:global(.ant-switch) {
-  background: #049417;
+  background: @color-border-lighter;
 }
 
 .statusSwitch:global(.ant-switch.ant-switch-checked) {
-  background: #049417;
+  background: @color-border-lighter;
 }
 
 .statusSwitch:global(.ant-switch:not(.ant-switch-checked)) {
-  background: #6b6b6b;
+  background: @color-text-secondary;
 }
 
 .statusSwitch:global(.ant-switch:hover),
 .statusSwitch:global(.ant-switch.ant-switch-checked:hover) {
-  background: #049417;
+  background: @color-border-lighter;
 }
 
 .terminalModalValue {
   margin-top: 6px;
   padding: 8px 10px;
   border-radius: 6px;
-  border: 1px solid #1f2f23;
-  background: #0c1510;
-  color: #b7d3bd;
+  border: 1px solid @color-border-medium;
+  background: @color-bg-light;
+  color: @color-text;
 }
 
 .terminalModalUser {
@@ -450,9 +470,9 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #132817;
-  border: 1px solid #2f5c39;
-  color: #8dff9d;
+  background: @color-bg-lighter;
+  border: 1px solid @color-border-light;
+  color: @color-primary;
   display: grid;
   place-items: center;
   font-weight: 700;
@@ -491,35 +511,34 @@
   align-items: center;
   min-height: calc(100vh - 72px);
   padding: 40px 20px;
-  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-    monospace;
-  color: #d8e6d8;
+  font-family: @font-family-mono;
+  color: @color-text-light;
 }
 
 .card {
   width: min(560px, 100%);
-  background: #0b0f0c;
+  background: @color-bg;
   border-radius: 12px;
   padding: 28px;
-  border: 1px solid #1e2b1f;
+  border: 1px solid @color-border-medium;
   box-shadow: 0 18px 40px rgba(3, 6, 4, 0.6);
 }
 
 .header h2 {
   margin: 0 0 6px;
   font-size: 20px;
-  color: #8dff9d;
+  color: @color-primary;
   letter-spacing: 0.5px;
 }
 
 .header p {
   margin: 0 0 20px;
-  color: #7ea687;
+  color: @color-text-secondary;
 }
 
 .terminal {
-  background: #070a08;
-  border: 1px solid #162218;
+  background: @color-darker;
+  border: 1px solid @color-border-dark;
   border-radius: 10px;
   padding: 18px;
 }
@@ -534,7 +553,7 @@
 }
 
 .prompt span {
-  color: #8dff9d;
+  color: @color-primary;
 }
 
 .form {
@@ -545,9 +564,9 @@
 
 
 .error {
-  background: #2a0c0c;
-  border: 1px solid #5b1b1b;
-  color: #ff9a9a;
+  background: @color-error-bg;
+  border: 1px solid @color-error-border;
+  color: @color-error;
   padding: 10px 12px;
   border-radius: 6px;
 }
@@ -564,9 +583,9 @@
 }
 
 .primaryButton {
-  background: #132817;
-  color: #8dff9d;
-  border-color: #2f5c39;
+  background: @color-bg-lighter;
+  color: @color-primary;
+  border-color: @color-border-light;
 }
 
 .primaryButton:disabled {
@@ -576,8 +595,8 @@
 
 .secondaryButton {
   background: transparent;
-  color: #8dff9d;
-  border-color: #2f5c39;
+  color: @color-primary;
+  border-color: @color-border-light;
 }
 
 .sessionCard {
@@ -590,25 +609,25 @@
   display: grid;
   grid-template-columns: 140px 1fr;
   gap: 12px;
-  color: #b7d3bd;
+  color: @color-text;
 }
 
 .sessionRow strong {
-  color: #d8e6d8;
+  color: @color-text-light;
 }
 
 .sessionRow code {
-  background: #101812;
+  background: @color-bg-light;
   padding: 2px 6px;
   border-radius: 6px;
   font-size: 12px;
-  color: #8dff9d;
-  border: 1px solid #1f2d22;
+  color: @color-primary;
+  border: 1px solid @color-border-medium;
 }
 
 .hint {
   margin-top: 14px;
-  color: #67816e;
+  color: @color-text-secondary;
   font-size: 12px;
 }
 
@@ -619,8 +638,8 @@
 }
 
 .sidebar {
-  background: #050705;
-  border: 1px solid #142017;
+  background: @color-darkest;
+  border: 1px solid @color-border-dark;
   border-radius: 12px;
   padding: 16px;
   height: calc(100vh - 72px);
@@ -632,7 +651,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #8dff9d;
+  color: @color-primary;
   font-size: 14px;
   text-transform: uppercase;
   letter-spacing: 1px;
@@ -640,9 +659,9 @@
 }
 
 .sidebarToggle {
-  background: #0c1510;
-  border: 1px solid #1f2f23;
-  color: #8dff9d;
+  background: @color-bg-light;
+  border: 1px solid @color-border-medium;
+  color: @color-primary;
   border-radius: 6px;
   width: 26px;
   height: 26px;
@@ -657,23 +676,27 @@
   overflow: hidden;
 }
 
+.sidebarCollapsed .sidebarHeader {
+  justify-content: center;
+}
+
 .sidebarCollapsed .sidebarHeader span {
   display: none;
 }
 
+.sidebarCollapsed .sidebarToggle {
+  display: block;
+  margin: 0;
+}
+
 .sidebarCollapsed .sidebarItem {
-  font-size: 0;
+  font-size: 24px;
   padding: 10px;
   text-align: center;
 }
 
-.sidebarCollapsed .sidebarItem::first-letter {
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
 .terminalContent{
-  color:#8dff9d;
+  color:@color-primary;
   padding: 4px 0;
 }
 
@@ -688,14 +711,9 @@
   }
 
   .sidebarItem {
-    font-size: 0;
+    font-size: 12px;
     padding: 10px;
     text-align: center;
-  }
-
-  .sidebarItem::first-letter {
-    font-size: 12px;
-    text-transform: uppercase;
   }
 }
 
@@ -707,14 +725,14 @@
 
 .sidebarSeparator {
   height: 1px;
-  background: #1f2f23;
+  background: @color-border-medium;
   margin: 24px 0;
 }
 
 .sidebarItem {
-  background: #0c1510;
-  border: 1px solid #1f2f23;
-  color: #b7d3bd;
+  background: @color-bg-light;
+  border: 1px solid @color-border-medium;
+  color: @color-text;
   border-radius: 8px;
   padding: 10px 12px;
   text-align: left;
@@ -725,13 +743,13 @@
 }
 
 .sidebarItem:hover {
-  border-color: #2f5c39;
-  color: #8dff9d;
+  border-color: @color-border-light;
+  color: @color-primary;
 }
 
 .dashboardContent {
-  background: #050705;
-  border: 1px solid #142017;
+  background: @color-darkest;
+  border: 1px solid @color-border-dark;
   border-radius: 12px;
   padding: 24px;
   flex: 1;
@@ -739,7 +757,7 @@
 
 .dashboardTitle {
   margin: 0 0 8px;
-  color: #8dff9d;
+  color: @color-primary;
   font-size: 20px;
 }
 
@@ -766,21 +784,21 @@
 }
 
 .searchLabel {
-  color: #7ea687;
+  color: @color-text-secondary;
   min-width: 40px;
 }
 
 .dashboardSubtitle {
   margin: 0 0 20px;
-  color: #7ea687;
+  color: @color-text-secondary;
 }
 
 .dashboardPanel {
-  background: #0a110d;
-  border: 1px solid #1f2f23;
+  background: @color-dark;
+  border: 1px solid @color-border-medium;
   border-radius: 10px;
   padding: 16px;
-  color: #b7d3bd;
+  color: @color-text;
   margin-top: 28px;
 }
 
@@ -788,11 +806,11 @@
 :global {
   * {
     scrollbar-width: thin;
-    scrollbar-color: #4b5cff #000000;
+    scrollbar-color: @color-scrollbar @color-black;
   }
 
   body {
-    background: #000000;
+    background: @color-black;
   }
 
   *::-webkit-scrollbar {
@@ -801,23 +819,23 @@
   }
 
   *::-webkit-scrollbar-track {
-    background: #000000;
+    background: @color-black;
   }
 
   *::-webkit-scrollbar-thumb {
-    background: #4b5cff;
+    background: @color-scrollbar;
     border-radius: 999px;
-    border: 2px solid #000000;
+    border: 2px solid @color-black;
   }
 }
 
 /* Footer styles */
 .footer {
-  background: #050705;
-  border-top: 1px solid #142017;
+  background: @color-darkest;
+  border-top: 1px solid @color-border-dark;
   padding: 16px 24px;
   text-align: center;
-  color: #696F75;
+  color: @color-text-secondary;
   font-size: 12px;
   position: fixed;
   bottom: 0;
@@ -845,18 +863,18 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
-  background: #132817;
-  color: #8dff9d;
-  border: 1px solid #2f5c39;
+  background: @color-bg-lighter;
+  color: @color-primary;
+  border: 1px solid @color-border-light;
   border-radius: 4px;
-  font-family: 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-family: @font-family-mono;
   font-size: 14px;
   height: 40px;
   cursor: pointer;
   transition: all 0.2s ease;
   
   &:hover {
-    border-color: #8dff9d;
+    border-color: @color-primary;
   }
 }
 
@@ -870,7 +888,7 @@
 
 .terminalSelectArrow {
   margin-left: 12px;
-  color: #8dff9d;
+  color: @color-primary;
   font-size: 10px;
   transition: transform 0.2s ease;
 }
@@ -884,8 +902,8 @@
   top: 100%;
   left: 0;
   right: 0;
-  background: #132817;
-  border: 1px solid #2f5c39;
+  background: @color-bg-lighter;
+  border: 1px solid @color-border-light;
   border-top: none;
   border-radius: 0 0 4px 4px;
   margin: 0;
@@ -897,19 +915,19 @@
 
 .terminalSelectOption {
   padding: 8px 16px;
-  color: #8dff9d;
-  font-family: 'Courier New', monospace;
+  color: @color-primary;
+  font-family: @font-family-mono;
   font-size: 14px;
   cursor: pointer;
   transition: background-color 0.2s ease;
   
   &:hover {
-    background: #2f5c39;
+    background: @color-border-light;
   }
 }
 
 .terminalSelectOptionSelected {
-  background: #2f5c39;
+  background: @color-border-light;
   font-weight: bold;
 }
 
@@ -920,32 +938,32 @@
   padding: 12px 16px;
   border-radius: 8px;
   margin-bottom: 16px;
-  font-family: 'Courier New', monospace;
+  font-family: @font-family-mono;
   font-size: 14px;
 }
 
 .terminalAlertError {
-  background: #2d1d1d;
-  border: 1px solid #4d2d2d;
-  color: #ff9a9a;
+  background: @color-error-bg;
+  border: 1px solid @color-error-border;
+  color: @color-error;
 }
 
 .terminalAlertSuccess {
-  background: #1d2d1d;
-  border: 1px solid #2d4d2d;
-  color: #8dff9d;
+  background: @color-success-bg;
+  border: 1px solid @color-success-border;
+  color: @color-success;
 }
 
 .terminalAlertWarning {
-  background: #2d2d1d;
-  border: 1px solid #4d4d2d;
-  color: #ffd79a;
+  background: @color-warning-bg;
+  border: 1px solid @color-warning-border;
+  color: @color-warning;
 }
 
 .terminalAlertInfo {
-  background: #1d1d2d;
-  border: 1px solid #2d2d4d;
-  color: #9a9aff;
+  background: @color-info-bg;
+  border: 1px solid @color-info-border;
+  color: @color-info;
 }
 
 .terminalAlertIcon {

@@ -18,6 +18,7 @@ export const AppProvider = ({ children }) => {
           setSession({
             username: data.username || 'user',
             sessionId: data.sessionId,
+            role: data.role || 'USER',
             loginAt: new Date().toISOString(),
           });
         }
@@ -47,6 +48,7 @@ export const AppProvider = ({ children }) => {
       const nextSession = {
         username,
         sessionId: data.sessionId,
+        role: data.role || 'USER',
         loginAt: new Date().toISOString(),
       };
       setSession(nextSession);

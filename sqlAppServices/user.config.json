@@ -2,28 +2,45 @@
   "users": [
     {
       "username": "user1",
-      "md5": "c3b9c1f43b0664fe2895c926920633ef",
-      "status": 1
+      "md5": "d5fdff63c08412c76d4dfecb58b589ad",
+      "status": 1,
+      "role": "USER"
     },
     {
       "username": "user2",
       "md5": "779110cd8112e9f6339748b2077270b6",
-      "status": 1
+      "status": 1,
+      "role": "USER"
     },
     {
       "username": "user3",
       "md5": "779110cd8112e9f6339748b2077270b6",
-      "status": 1
+      "status": 1,
+      "role": "USER"
     },
     {
       "username": "lulu",
       "md5": "c3b9c1f43b0664fe2895c926920633ef",
-      "status": 0
+      "status": 0,
+      "role": "SUPER"
     },
     {
       "username": "abc",
       "md5": "c3b9c1f43b0664fe2895c926920633ef",
-      "status": 1
+      "status": 0,
+      "role": "USER"
+    },
+    {
+      "username": "user11",
+      "md5": "c3b9c1f43b0664fe2895c926920633ef",
+      "status": 0,
+      "role": "USER"
+    },
+    {
+      "username": "user111",
+      "md5": "571b586897a1d41b4d0109c51c459fe2",
+      "status": 0,
+      "role": "USER"
     }
   ]
 }

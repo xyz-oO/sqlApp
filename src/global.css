@@ -1,22 +1,30 @@
-.ant-btn:hover{
-    color: #8dff9d !important;
-    background: #0a170c !important;
-    border: 1px solid #2f5c39 !important;
-}
-/* .ant-input::placeholder{
-    border: none !important;
+:root {
+  --color-primary: #8dff9d;
+  --color-bg-light: #0c1510;
+  --color-bg-lighter: #0a170c;
+  --color-dark: #0a110d;
+  --color-border-light: #2f5c39;
 }
 
-.ant-input:focus{
-    border: 1px solid #8dff9d  !important;
+.ant-btn:hover{
+    color: var(--color-primary) !important;
+    background: var(--color-bg-lighter) !important;
+    border: 1px solid var(--color-border-light) !important;
 }
-.ant-input{
-    color:#8dff9d !important;
-}*/
+.ant-select{
+    background: var(--color-dark) !important;
+    color: var(--color-primary) !important;
+    border: 1px solid var(--color-border-light) !important;
+}
+.ant-select-dropdown{
+    background: var(--color-dark) !important;
+    color: var(--color-primary) !important;
+    /* border: 1px solid var(--color-border-light) !important; */
+}
+.anticon-right{
+    color: var(--color-primary) !important;
+}
+
 input.ant-input.css-dev-only-do-not-override-1d8anct {
     border: none !important;
 }
-
-ant-input-affix-wrapper css-dev-only-do-not-override-1d8anct ant-input-outlined css-var-root ant-input-css-var:focus{
-    border:#8dff9d !important;
-} 

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import styles from '../themes/terminal.less';
 import DbConfigModal from '../components/DbConfigModal';
 import SqlSubmitModal from '../components/SqlSubmitModal';
+import TerminalAlert from '../components/TerminalAlert';
 import { request } from 'umi';
 import SidebarNav from '../components/SidebarNav';
 import { useSqlConfig } from '../contexts/SqlConfigContext';
@@ -53,6 +54,7 @@ export default function SqlManagerPage() {
     setConfigOpen(true);
     setConfigLoaded(true);
     setDbNameError('');
+    setTestResult(null); // Clear test result
     console.log("openNewConfig")
   };
   const openConfigInEditMode = async (record = null) => {
@@ -113,6 +115,9 @@ export default function SqlManagerPage() {
     setSubmitModalOpen(true);
     setSubmitError('');
     setEditingSqlConfig(null);
+    setMenuName('');
+    setSqlContent('');
+    setDbname('');
   };
   
   const openEditSqlModal = (config) => {
@@ -337,16 +342,16 @@ export default function SqlManagerPage() {
 
   return (
     <div className={styles.dashboard}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <span>System</span>
-        </div>
-        <SidebarNav />
-      </aside>
+      <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
       <section className={styles.dashboardContent}>
+          {notice && (
+            <div style={{ marginBottom: 16 }}>
+              <TerminalAlert message={notice} type="success" showIcon={true} />
+            </div>
+          )}
         <h2 className={styles.dashboardTitle}>SQL 管理器</h2>
         <p className={styles.dashboardSubtitle}>
-          Configure your SQL connections and queries here.
+          在此配置您的 SQL 连接和查询。
         </p>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -361,7 +366,7 @@ export default function SqlManagerPage() {
               新建配置
             </Button>
           </div>
-  
+
           {dbConfigLoading ? (
             <div className={styles.terminalContent}>加载中...</div>
           ) : dbConfigs.length === 0 ? (
@@ -380,25 +385,25 @@ export default function SqlManagerPage() {
                   title: '主机',
                   dataIndex: 'host',
                   key: 'host',
-                  render: (text) => <Text style={{ color: '#8dff9d' }}>{text}</Text>,
+                  render: (text) => <Text className={styles.terminalText}>{text}</Text>,
                 },
                 {
                   title: '端口',
                   dataIndex: 'port',
                   key: 'port',
-                  render: (text) => <Text style={{ color: '#b7d3bd' }}>{text}</Text>,
+                  render: (text) => <Text className={styles.terminalText}>{text}</Text>,
                 },
                 {
                   title: '数据库',
                   dataIndex: 'database',
                   key: 'database',
-                  render: (text) => <Text style={{ color: '#b7d3bd' }}>{text}</Text>,
+                  render: (text) => <Text className={styles.terminalText}>{text}</Text>,
                 },
                 {
                   title: '用户名',
                   dataIndex: 'user',
                   key: 'user',
-                  render: (text) => <Text style={{ color: '#b7d3bd' }}>{text}</Text>,
+                  render: (text) => <Text className={styles.terminalText}>{text}</Text>,
                 },
                 {
                   title: '操作',
@@ -455,13 +460,13 @@ export default function SqlManagerPage() {
                   title: '目录名',
                   dataIndex: 'menu_name',
                   key: 'menu_name',
-                  render: (text) => <Text style={{ color: '#8dff9d' }}>{text}</Text>,
+                  render: (text) => <Text className={styles.terminalText}>{text}</Text>,
                 },
                 {
                   title: '数据库名',
                   dataIndex: 'dbname',
                   key: 'dbname',
-                  render: (text) => <Text style={{ color: '#b7d3bd' }}>{text || '-'}</Text>,
+                  render: (text) => <Text className={styles.terminalText}>{text || '-'}</Text>,
                 },
                 {
                   title: '创建时间',
@@ -503,7 +508,6 @@ export default function SqlManagerPage() {
           )}
         </div>
       </section>
-      {notice ? <div className={styles.terminalNotice}>{notice}</div> : null}
       <DbConfigModal
         open={configOpen}
         host={host}

@@ -298,7 +298,7 @@ export default function SqlPage() {
           setColumnNames([]);
         }
       } catch (err) {
-        setQueryError(err?.response?.data?.error || 'Failed to execute SQL query');
+        setQueryError(err?.response?.data?.error || '执行 SQL 查询失败');
         setColumnNames([]);
       } finally {
         setQueryLoading(false);
@@ -313,14 +313,9 @@ export default function SqlPage() {
   if (loading) {
     return (
       <div className={styles.dashboard}>
-        <aside className={styles.sidebar}>
-          <div className={styles.sidebarHeader}>
-            <span>System</span>
-          </div>
-          <SidebarNav />
-        </aside>
+        <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
         <section className={styles.dashboardContent}>
-          <h2 className={styles.dashboardTitle}>Loading...</h2>
+          <h2 className={styles.dashboardTitle}>加载中...</h2>
         </section>
       </div>
     );
@@ -329,14 +324,9 @@ export default function SqlPage() {
   if (error) {
     return (
       <div className={styles.dashboard}>
-        <aside className={styles.sidebar}>
-          <div className={styles.sidebarHeader}>
-            <span>System</span>
-          </div>
-          <SidebarNav />
-        </aside>
+        <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
         <section className={styles.dashboardContent}>
-          <h2 className={styles.dashboardTitle}>Error</h2>
+          <h2 className={styles.dashboardTitle}>错误</h2>
           <p className={styles.dashboardSubtitle}>{error}</p>
         </section>
       </div>
@@ -364,14 +354,14 @@ export default function SqlPage() {
     const sequenceColumn = {
       title: '#',
       key: 'index',
-      render: (_, __, index) => <span style={{ color: '#8dff9d' }}>{index + 1}</span>,
+      render: (_, __, index) => <span className={styles.terminalTableHeader}>{index + 1}</span>,
     };
     // Create columns from extracted column names
     const dataColumns = columnNames.map(key => ({
       title: key,
       dataIndex: key,
       key: key,
-      render: (text) => <span style={{ color: '#b7d3bd' }}>{text}</span>
+      render: (text) => <span className={styles.terminalText}>{text}</span>
     }));
     // Combine edit column, sequence column with data columns
     return [editColumn, sequenceColumn, ...dataColumns];
@@ -388,13 +378,13 @@ export default function SqlPage() {
 
   return (
     <div className={styles.dashboard}>
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <span>System</span>
-        </div>
-        <SidebarNav />
-      </aside>
+      <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
       <section className={styles.dashboardContent}>
+          {notice && (
+            <div style={{ marginBottom: 16 }}>
+              <TerminalAlert message={notice} type="success" showIcon={true} />
+            </div>
+          )}
         <h2 className={styles.dashboardTitle}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -412,7 +402,7 @@ export default function SqlPage() {
               style={{
                 background: 'none',
                 border: 'none',
-                color: '#8dff9d',
+                color: styles.terminalText2,
                 cursor: 'pointer',
                 fontSize: '16px',
                 padding: '0',
@@ -444,7 +434,7 @@ export default function SqlPage() {
                   borderRadius: '8px', 
                   overflow: 'auto',
                   marginTop: '8px',
-                  color: '#8dff9d'
+                  color: styles.terminalText2
                 }}>
                   {sqlConfig?.sql || 'No SQL content'}
                 </pre>
@@ -460,19 +450,19 @@ export default function SqlPage() {
             />
           )}
           {queryLoading ? (
-            <div style={{ padding: 16, background: '#0b0f0c', borderRadius: 8, border: '1px solid #2f5c39', color: '#8dff9d' }}>
+            <div style={{ padding: 16, background: styles.sessionBackground, borderRadius: 8, border: styles.sessionBorder, color: styles.sessionHighlightText }}>
               Executing query...
             </div>
           ) : queryResults.length > 0 ? (
             <div className={styles.dashboardPanel}>
               <h3 className={styles.dashboardSubtitle}>Query Results</h3>
               {/* Terminal-style search area */}
-              <div style={{ marginBottom: 16, padding: 16, background: '#0b0f0c', borderRadius: 8, border: '1px solid #2f5c39' }}>
-                <h4 style={{ color: '#8dff9d', margin: '0 0 12px 0', fontSize: 14 }}>Column Search</h4>
+              <div style={{ marginBottom: 16, padding: 16, background: styles.sessionBackground, borderRadius: 8, border: styles.sessionBorder }}>
+                <h4 style={{ color: styles.sessionHighlightText, margin: '0 0 12px 0', fontSize: 14 }}>Column Search</h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
                   {columnNames.map(key => (
                     <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ color: '#b7d3bd', fontSize: 12 }}>{key}:</span>
+                      <span style={{ color: styles.sessionText, fontSize: 12 }}>{key}:</span>
                       <TerminalTextInput
                         placeholder="搜索"
                         style={{minWidth:"50px"}}
@@ -500,8 +490,8 @@ export default function SqlPage() {
               />
             </div>
           ) : (
-            <div style={{ marginBottom: 16, padding: 16, background: '#0b0f0c', borderRadius: 8, border: '1px solid #2f5c39' }}>
-              <p style={{ color: '#b7d3bd', margin: 0 }}>No results returned from query.</p>
+            <div style={{ marginBottom: 16, padding: 16, background: styles.sessionBackground, borderRadius: 8, border: styles.sessionBorder }}>
+              <p style={{ color: styles.sessionText, margin: 0 }}>No results returned from query.</p>
             </div>
           )}
         </div>
@@ -529,7 +519,6 @@ export default function SqlPage() {
         error={submitError}
         isEditing={true}
       />
-      {notice ? <div className={styles.terminalNotice}>{notice}</div> : null}
       <footer className={styles.footer}>
         <p>This web platform is developed by PT, for internal management use only by authorized personnel.</p>
       </footer>

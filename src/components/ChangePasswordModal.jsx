@@ -22,7 +22,7 @@ export default function ChangePasswordModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className={styles.terminalModalHeader}>
-          <span>Change Password</span>
+          <span>修改密码</span>
           <button className={styles.terminalModalClose} type="button" onClick={onCancel}>
             ×
           </button>
@@ -58,7 +58,7 @@ export default function ChangePasswordModal({
             onClick={onCancel}
             disabled={saving}
           >
-            Cancel
+            取消
           </button>
           <button
             className={styles.terminalPrimaryButton}
@@ -66,7 +66,7 @@ export default function ChangePasswordModal({
             onClick={onSave}
             disabled={saving}
           >
-            {saving ? 'Saving...' : 'Save'}
+            {saving ? '保存中...' : '保存'}
           </button>
         </div>
       </div>

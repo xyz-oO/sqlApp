@@ -1,14 +1,17 @@
 import { useState } from 'react';
 import TerminalTextInput from './TerminalTextInput';
 import TerminalPasswordInput from './TerminalPasswordInput';
+import TerminalSelect from './TerminalSelect';
 import styles from '../themes/terminal.less';
 
 export default function NewUserModal({
   open,
   username,
   password,
+  role,
   onUsernameChange,
   onPasswordChange,
+  onRoleChange,
   onCancel,
   onSave,
   saving,
@@ -53,8 +56,20 @@ export default function NewUserModal({
                   />
                 </div>
 
+                <div style={{ margin: '24px 0' }}>
+                  {/* <Text>Role</Text> */}
+                  <TerminalSelect
+                    value={role || 'USER'}
+                    onChange={onRoleChange}
+                    options={[
+                      { value: 'USER', label: 'USER' },
+                      { value: 'SUPER', label: 'SUPER' }
+                    ]}
+                    placeholder="选择角色"
+                    style={{ width: '560px' }}
+                  />
+                </div>
                 
-                 
                 {error ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{error}</div> : null}
               </div>
               <div className={styles.terminalModalFooter}>
@@ -64,7 +79,7 @@ export default function NewUserModal({
                   onClick={onCancel}
                   disabled={saving}
                   >
-                  Cancel
+                  取消
                   </button>
 
                 <button
@@ -73,7 +88,7 @@ export default function NewUserModal({
                   onClick={onSave}
                   disabled={saving}
                 >
-                  {saving ? 'Saving...' : '保存'}
+                  {saving ? '保存中...' : '保存'}
                 </button>
               </div>
             

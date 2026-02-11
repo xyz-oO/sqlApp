@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import { Link } from 'umi';
 import { useSqlConfig } from '../contexts/SqlConfigContext';
+import { useApp } from '../contexts/appContext';
 import styles from '../themes/terminal.less';
 
 export default function SidebarNav({
@@ -7,26 +9,48 @@ export default function SidebarNav({
   sqlLabel = 'SQL管理',
 }) {
   const { sqlConfigs } = useSqlConfig();
+  const { session } = useApp();
+  const [collapsed, setCollapsed] = useState(false);
+  const emojis=['👾','💭','🐡','🦓','🐴','🍄']
+
+  const getRandomEmoji = () => {
+    const index = Math.floor(Math.random() * emojis.length);
+    return emojis[index];
+  };
 
   return (
-    <nav className={styles.sidebarNav}>
-      <Link className={styles.sidebarItem} to="/user-manager">
-        {userLabel}
-      </Link>
-      <Link className={styles.sidebarItem} to="/sql-manager">
-        {sqlLabel}
-      </Link>
-      <div className={styles.sidebarSeparator}></div>
-      {sqlConfigs.map((config) => (
-        <Link 
-          key={config.id} 
-          className={styles.sidebarItem} 
-          to={`/sql/${config.id}`}
+    <div className={`${styles.sidebar} ${collapsed ? styles.sidebarCollapsed : ''}`}>
+      <div className={styles.sidebarHeader}>
+        <span>System</span>
+        <button
+          className={styles.sidebarToggle}
+          type="button"
+          onClick={() => setCollapsed((value) => !value)}
         >
-          {config.menu_name}
+          {collapsed ? '>' : '<'}
+        </button>
+      </div>
+      <nav className={styles.sidebarNav}>
+        {session?.role === 'SUPER' && (
+          <Link className={styles.sidebarItem} to="/user-manager">
+            {collapsed ? '💀' : userLabel}
+          </Link>
+        )}
+        <Link className={styles.sidebarItem} to="/sql-manager">
+          {collapsed ? '🧠' : sqlLabel}
         </Link>
-      ))}
-    </nav>
+        <div className={styles.sidebarSeparator}></div>
+        {sqlConfigs.map((config) => (
+          <Link 
+            key={config.id} 
+            className={styles.sidebarItem} 
+            to={`/sql/${config.id}`}
+          >
+            {collapsed ? getRandomEmoji() : config.menu_name}
+          </Link>
+        ))}
+      </nav>
+    </div>
   );
 }
 

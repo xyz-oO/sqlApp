@@ -8,7 +8,7 @@ export default defineConfig({
       redirect: '/login',
     },
     { path: "/login", component: "index" },
-    { path: "/user-manager", component: "user-manager" },
+    { path: "/user-manager", component: "user-manager"},
     { path: "/sql-manager", component: "sql-manager" },
     { path: "/:sessionId", component: "home" },
     { path: "/sql/:id", component: "sql/[id]" },
@@ -29,6 +29,7 @@ export default defineConfig({
   request:{},
   plugins:[
     '@umijs/plugins/dist/request'
-  ]
+  ],
+  jsMinifier: 'terser'
 
 });

@@ -82,7 +82,7 @@ export default function DbConfigModal({
               placeholder="密码"
             />
           </div>
-          {error ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{error}</div> : null}
+          {error ? <div style={{ marginTop: 8, color: styles.terminalResultTextError}}>{error}</div> : null}
         </div>
         <div className={styles.terminalModalFooter}>
           <button
