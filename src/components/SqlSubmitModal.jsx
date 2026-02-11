@@ -78,7 +78,7 @@ export default function SqlSubmitModal({
             />
           </div>
           {error && (
-            <div className={styles.error} style={{ marginTop: '12px' }}>
+            <div style={{ padding: '0 16px 16px', color: '#ff9a9a' }}>
               {error}
             </div>
           )}

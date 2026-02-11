@@ -12,6 +12,7 @@ export default defineConfig({
     { path: "/sql-manager", component: "sql-manager" },
     { path: "/:sessionId", component: "home" },
     { path: "/sql/:id", component: "sql/[id]" },
+    { path: "*", component: "404" },
   ],
   // target:{
   //   chrome: 75

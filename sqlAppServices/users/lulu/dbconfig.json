@@ -1,6 +1,7 @@
 [
   {
-    "host": "localhost",
+    "id": "31420c82-89a0-4ea7-b5de-403e2c5c0ea0",
+    "host": "127.0.0.1",
     "port": "3306",
     "database": "tydb",
     "user": "root",

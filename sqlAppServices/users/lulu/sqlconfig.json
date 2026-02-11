@@ -12,5 +12,12 @@
     "sql": "select nickname,user_role,login_count from users;",
     "dbname": "tydb",
     "created_at": "2026-02-11T03:01:03.592586Z"
+  },
+  {
+    "id": "b1d3fd37-392d-44cd-8ca0-f3528e7aeb48",
+    "menu_name": "mytable",
+    "sql": "select abc from user;",
+    "dbname": "tydb11",
+    "created_at": "2026-02-11T08:12:34.822634Z"
   }
 ]

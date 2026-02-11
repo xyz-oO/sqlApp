@@ -76,13 +76,13 @@ export default function SqlManagerPage() {
     }
   };
   
-  const handleDeleteDbConfig = async (databaseName) => {
+  const handleDeleteDbConfig = async (configId, databaseName) => {
     setDeletingDbConfig(databaseName);
     try {
       await request('/db/config', {
         method: 'DELETE',
         data: {
-          database: databaseName,
+          id: configId,
         },
       });
       
@@ -210,31 +210,12 @@ export default function SqlManagerPage() {
   };
 
   const handleUpdateConfig = async () => {
-    // Only check for duplicate database name when creating a new config
-    if (!editingDbConfig) {
-      const existingConfig = dbConfigs.find(config => config.database === database);
-      
-      if (existingConfig) {
-        setNotice('数据库名已存在，请使用不同的数据库名');
-        setTimeout(() => setNotice(''), 3000);
-        return false;
-      }
-    }
-
+    setTestResult(null);
     try {
-      // If editing an existing config and database name changed, delete the old one first
-      if (editingDbConfig && editingDbConfig.database !== database) {
-        await request('/db/config', {
-          method: 'DELETE',
-          data: {
-            database: editingDbConfig.database,
-          },
-        });
-      }
-
       await request('/db/config', {
         method: 'POST',
         data: {
+          id: editingDbConfig?.id,
           host,
           database,
           port,
@@ -248,9 +229,12 @@ export default function SqlManagerPage() {
       setEditingDbConfig(null); // Clear the editing state
       return true;
     } catch (error) {
+      console.log("err:",error)
       const errorMessage = error?.response?.data?.error || '保存失败，请重试';
-      setNotice(errorMessage);
-      setTimeout(() => setNotice(''), 3000);
+      // setNotice(errorMessage);
+      // setTimeout(() => setNotice(''), 3000);
+      setTestResult({ ok: false, message: errorMessage});
+
       return false;
     }
   };
@@ -420,7 +404,7 @@ export default function SqlManagerPage() {
                       <Button
                         className={styles.secondaryButton}
                         type="button"
-                        onClick={() => handleDeleteDbConfig(record.database)}
+                        onClick={() => handleDeleteDbConfig(record.id, record.database)}
                         loading={deletingDbConfig === record.database}
                       >
                         删除

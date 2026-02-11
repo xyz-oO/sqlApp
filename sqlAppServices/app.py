@@ -1,7 +1,7 @@
 import os
 import uuid
 from datetime import datetime, timedelta
-
+import urllib.parse 
 import hashlib
 import json
 import jwt
@@ -386,8 +386,10 @@ def db_health():
         return jsonify({"ok": False, "error": f"missing fields: {', '.join(missing)}"}), 400
 
     try:
+        encoded_password = urllib.parse.quote_plus(config["password"])
+
         engine = create_engine(
-            f"mysql+pymysql://{config['user']}:{config['password']}"
+            f"mysql+pymysql://{config['user']}:{encoded_password}"
             f"@{config['host']}:{config['port']}/{config['database']}"
         )
         with engine.connect() as connection:
@@ -412,11 +414,14 @@ def get_db_config():
 
 @app.post("/api/db/config")
 def update_db_config():
+    import uuid
     username = _get_username_from_request()
     if not username:
         return jsonify({"error": "unauthorized"}), 401
     payload = request.get_json(silent=True) or {}
+    config_id = payload.get("id") or str(uuid.uuid4())
     new_config = {
+        "id": config_id,
         "host": payload.get("host") or "",
         "port": payload.get("port"),
         "database": payload.get("database") or "",
@@ -426,22 +431,48 @@ def update_db_config():
     
     existing_configs = _load_db_config(username)
     
-    # Check if a config with the same database name already exists
+    # Check if a config with the same id already exists
     config_index = next(
         (i for i, config in enumerate(existing_configs) 
-         if config.get("database") == new_config.get("database")),
+         if config.get("id") == config_id),
         None
     )
     
     if config_index is not None:
-        # Return error if database already exists
-        return jsonify({"error": "数据库名已存在，请使用不同的数据库名"}), 409
+        # Update existing config
+        original_config = existing_configs[config_index]
+        original_db_name = original_config.get("database")
+        new_db_name = new_config.get("database")
+        
+        # Check if database name changed
+        if new_db_name != original_db_name:
+            # Check if a config with the new database name already exists
+            if new_db_name:
+                existing_db_config = next(
+                    (config for config in existing_configs 
+                     if config.get("database") == new_db_name and config.get("id") != config_id),
+                    None
+                )
+                if existing_db_config:
+                    return jsonify({"error": "数据库名已存在，请使用不同的数据库名"}), 409
+        
+        existing_configs[config_index] = new_config
     else:
+        # Check if a config with the same database name already exists
+        db_name = new_config.get("database")
+        if db_name:
+            existing_db_config = next(
+                (config for config in existing_configs 
+                 if config.get("database") == db_name),
+                None
+            )
+            if existing_db_config:
+                return jsonify({"error": "数据库名已存在，请使用不同的数据库名"}), 409
         # Add new config
         existing_configs.append(new_config)
     
     _save_db_config(username, existing_configs)
-    return jsonify({"ok": True})
+    return jsonify({"ok": True, "id": config_id})
 
 
 @app.delete("/api/db/config")
@@ -450,15 +481,15 @@ def delete_db_config():
     if not username:
         return jsonify({"error": "unauthorized"}), 401
     payload = request.get_json(silent=True) or {}
-    database_name = payload.get("database")
+    config_id = payload.get("id")
     
-    if not database_name:
-        return jsonify({"error": "database name required"}), 400
+    if not config_id:
+        return jsonify({"error": "config id required"}), 400
     
     existing_configs = _load_db_config(username)
     filtered_configs = [
         config for config in existing_configs 
-        if config.get("database") != database_name
+        if config.get("id") != config_id
     ]
     
     _save_db_config(username, filtered_configs)
@@ -479,10 +510,12 @@ def execute_sql():
 
         if not db_config or not sql:
             return jsonify({"error": "Missing dbConfig or sql"}), 400
+        
+        encoded_password = urllib.parse.quote_plus(db_config["password"])
 
         # Connect to database using SQLAlchemy
         engine = create_engine(
-            f"mysql+pymysql://{db_config['user']}:{db_config['password']}"
+            f"mysql+pymysql://{db_config['user']}:{encoded_password}"
             f"@{db_config['host']}:{db_config['port']}/{db_config['database']}"
         )
 
