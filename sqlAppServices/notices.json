@@ -1,0 +1,35 @@
+{
+  "messages": [
+    {
+      "id": 1,
+      "title": "Message title 1",
+      "body": "This is the message body for title 1.\n\nYou can put any text here.",
+      "footer": "",
+      "pushed": true,
+      "pushedAt": "2026-02-03T08:12:45Z"
+    },
+    {
+      "id": 2,
+      "title": "Message title 2",
+      "body": "This is the message body for title 2.\n\nSecond line example.",
+      "footer": "",
+      "pushed": true,
+      "pushedAt": "2026-01-29T21:05:10Z"
+    },
+    {
+      "id": 3,
+      "title": "Message title 3",
+      "body": "This is the message body for title 3.\n\nTerminal-style modal preview.",
+      "footer": "",
+      "pushed": true,
+      "pushedAt": "2026-02-10T14:33:02Z"
+    },
+    {
+      "id": 4,
+      "title": "message push tet",
+      "body": "this is a test. ",
+      "footer": "",
+      "pushedAt": "2026-02-12T05:52:35.735770Z"
+    }
+  ]
+}

@@ -5,6 +5,7 @@ import urllib.parse
 import hashlib
 import json
 import jwt
+import threading
 from sqlalchemy import create_engine, text
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -25,9 +26,26 @@ USERS_CONFIG_PATH = os.path.join(os.path.dirname(__file__), "user.config.json")
 USERS_DIR = os.path.join(os.path.dirname(__file__), "users")
 SESSIONS = {}
 
+_NOTICE_LOCK = threading.Lock()
+_NOTICE_READ_LOCK = threading.Lock()
+NOTICES_STORE_PATH = os.path.join(os.path.dirname(__file__), "notices.json")
+LEGACY_NOTICES_STORE_PATHS = [
+    os.path.join(os.path.dirname(__file__), "messages.store.json"),
+    os.path.join(os.path.dirname(__file__), "messages", "messages.store.json"),
+]
+
+NOTICE_READ_FILENAME = "notices_read.json"
+
+def _active_notices_store_path():
+    return NOTICES_STORE_PATH
+
 
 def _now():
     return datetime.utcnow()
+
+
+def _utc_now_iso():
+    return datetime.utcnow().isoformat() + "Z"
 
 
 def _expire_at():
@@ -44,6 +62,104 @@ def _encode_session(payload):
 
 def _decode_session(token):
     return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+
+
+def _role_from_cookie():
+    token = request.cookies.get("sessionId")
+    if not token:
+        return None
+    try:
+        data = _decode_session(token)
+        return data.get("role")
+    except jwt.PyJWTError:
+        return None
+
+
+def _require_super_role():
+    if _role_from_cookie() != "SUPER":
+        return jsonify({"error": "unauthorized, only SUPER role can access"}), 403
+    return None
+
+
+def _ensure_notices_store_exists():
+    active_path = _active_notices_store_path()
+    if os.path.exists(active_path):
+        return
+
+    for legacy_path in LEGACY_NOTICES_STORE_PATHS:
+        if os.path.exists(legacy_path):
+            with open(legacy_path, "r", encoding="utf-8") as f:
+                existing = json.load(f) or {}
+            with open(active_path, "w", encoding="utf-8") as f:
+                json.dump(existing, f, indent=2)
+            return
+
+    # No legacy + no defaults: initialize empty store
+    with open(active_path, "w", encoding="utf-8") as f:
+        json.dump({"messages": []}, f, indent=2)
+
+
+def _load_notices():
+    _ensure_notices_store_exists()
+    with open(_active_notices_store_path(), "r", encoding="utf-8") as f:
+        data = json.load(f) or {}
+    messages = data.get("messages") or []
+    normalized = []
+    for item in messages:
+        if not isinstance(item, dict):
+            continue
+        pushed_at = item.get("pushedAt")
+        pushed_value = item.get("pushed")
+        # If `pushed` was removed from JSON, infer from presence of pushedAt
+        pushed = bool(pushed_value) if pushed_value is not None else bool(pushed_at)
+        normalized.append(
+            {
+                "id": item.get("id"),
+                "title": item.get("title") or "",
+                "body": item.get("body") or "",
+                "footer": item.get("footer") or "",
+                "pushed": pushed,
+                "pushedAt": pushed_at,
+            }
+        )
+    return normalized
+
+
+def _save_notices(notices):
+    payload = {"messages": notices}
+    active_path = _active_notices_store_path()
+    with open(active_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+
+def _next_notice_id(notices):
+    ids = [n.get("id") for n in notices if isinstance(n.get("id"), int)]
+    return (max(ids) + 1) if ids else 1
+
+
+def _notice_read_path(username: str) -> str:
+    return os.path.join(USERS_DIR, username, NOTICE_READ_FILENAME)
+
+
+def _load_notice_reads(username: str) -> dict:
+    """
+    Returns map: { "<noticeId>": "<readAt iso>" }
+    """
+    try:
+        path = _notice_read_path(username)
+        with open(path, "r", encoding="utf-8") as f:
+            data = json.load(f) or {}
+        read_map = data.get("read") or {}
+        return read_map if isinstance(read_map, dict) else {}
+    except FileNotFoundError:
+        return {}
+
+
+def _save_notice_reads(username: str, read_map: dict) -> None:
+    os.makedirs(os.path.join(USERS_DIR, username), exist_ok=True)
+    path = _notice_read_path(username)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"read": read_map}, f, indent=2)
 
 
 def _load_users():
@@ -273,6 +389,100 @@ def get_session():
 
 @app.get("/api/health")
 def health():
+    return jsonify({"ok": True})
+
+
+# -------------------------
+# Notice management (CRUD)
+# -------------------------
+
+@app.get("/api/notices")
+def get_notices():
+    username = _get_username_from_request()
+    with _NOTICE_LOCK:
+        notices = _load_notices()
+    if not username:
+        return jsonify({"messages": notices})
+
+    with _NOTICE_READ_LOCK:
+        read_map = _load_notice_reads(username)
+    enriched = []
+    for item in notices:
+        notice_id = item.get("id")
+        key = str(notice_id) if notice_id is not None else ""
+        read_at = read_map.get(key)
+        enriched.append(
+            {
+                **item,
+                "read": bool(read_at),
+                "readAt": read_at,
+            }
+        )
+    return jsonify({"messages": enriched})
+
+
+@app.get("/api/messages")
+def get_messages_alias():
+    # Backward-compatible alias
+    return get_notices()
+
+
+@app.post("/api/notices")
+def create_notice():
+    auth = _require_super_role()
+    if auth:
+        return auth
+    payload = request.get_json(silent=True) or {}
+    title = (payload.get("title") or "").strip()
+    body = payload.get("body") or ""
+    footer = payload.get("footer") or ""
+    if not title:
+        return jsonify({"error": "title required"}), 400
+    with _NOTICE_LOCK:
+        notices = _load_notices()
+        new_notice = {
+            "id": _next_notice_id(notices),
+            "title": title,
+            "body": body,
+            "footer": footer,
+            "pushedAt": _utc_now_iso(),
+        }
+        notices.append(new_notice)
+        _save_notices(notices)
+    return jsonify({"ok": True, "message": new_notice})
+
+
+@app.post("/api/notices/<int:notice_id>/read")
+def mark_notice_read(notice_id: int):
+    username = _get_username_from_request()
+    if not username:
+        return jsonify({"error": "unauthorized"}), 401
+
+    with _NOTICE_LOCK:
+        notices = _load_notices()
+    if not any(n.get("id") == notice_id for n in notices):
+        return jsonify({"error": "notice not found"}), 404
+
+    read_at = _utc_now_iso()
+    with _NOTICE_READ_LOCK:
+        read_map = _load_notice_reads(username)
+        read_map[str(notice_id)] = read_at
+        _save_notice_reads(username, read_map)
+
+    return jsonify({"ok": True, "noticeId": notice_id, "readAt": read_at})
+
+
+@app.delete("/api/notices/<int:notice_id>")
+def delete_notice(notice_id: int):
+    auth = _require_super_role()
+    if auth:
+        return auth
+    with _NOTICE_LOCK:
+        notices = _load_notices()
+        remaining = [n for n in notices if n.get("id") != notice_id]
+        if len(remaining) == len(notices):
+            return jsonify({"error": "notice not found"}), 404
+        _save_notices(remaining)
     return jsonify({"ok": True})
 
 
