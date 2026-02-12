@@ -36,6 +36,11 @@ export default function SidebarNav({
             {collapsed ? '💀' : userLabel}
           </Link>
         )}
+        {session?.role === 'SUPER' && (
+          <Link className={styles.sidebarItem} to="/notice-manager">
+            {collapsed ? '📣' : '通知管理'}
+          </Link>
+        )}
         <Link className={styles.sidebarItem} to="/sql-manager">
           {collapsed ? '🧠' : sqlLabel}
         </Link>

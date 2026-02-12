@@ -10,6 +10,7 @@ export default defineConfig({
     { path: "/login", component: "index" },
     { path: "/user-manager", component: "user-manager"},
     { path: "/sql-manager", component: "sql-manager" },
+    { path: "/notice-manager", component: "notice-manager" },
     { path: "/:sessionId", component: "home" },
     { path: "/sql/:id", component: "sql/[id]" },
     { path: "*", component: "404" },
@@ -22,6 +23,10 @@ export default defineConfig({
   // },
   npmClient: 'pnpm',
   proxy: {
+    '/api/notices/send': {
+      target: 'http://localhost:5002',
+      changeOrigin: true,
+    },
     '/api': {
       target: 'http://localhost:5001',
       changeOrigin: true,

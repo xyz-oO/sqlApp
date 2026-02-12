@@ -172,6 +172,129 @@
 .avatarAction:hover {
   border-color: @color-border-lighter;
 }
+
+// Message dropdown (terminal style)
+.messageDropdownWrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-right: 8px;
+  margin-top: -8px;
+  // background-color: yellow;
+  height: 40px;
+}
+
+.messageDropdownButton {
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  line-height: 1;
+  position: relative;
+}
+
+.messageDropdownButton:focus-visible {
+  outline: 1px solid @color-scrollbar;
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+.messageDropdownIcon {
+  color: @color-scrollbar; // #4b5cff
+  font-size: 20px;
+}
+
+.messageDropdownMenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 200px;
+  background: @color-darkest;
+  border: 1px solid @color-border-dark;
+  border-radius: 10px;
+  padding: 10px;
+  z-index: 20;
+  display: grid;
+  gap: 8px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.6);
+}
+
+.messageDropdownItem {
+  background: transparent;
+  border: 1px solid @color-border-light;
+  color: @color-text;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.messageDropdownItem:hover {
+  border-color: @color-border-lighter;
+  color: @color-primary;
+}
+
+// Message modal (dedicated)
+.messageModalBody {
+  color: @color-text;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.messageModalFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid @color-border-medium;
+}
+
+.messageModalFooterText {
+  color: @color-text-secondary;
+  font-size: 13px;
+}
+
+.messageDropdownItemTitle {
+  color: @color-text;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.noticeUnreadTag {
+  color: @color-warning;
+  font-size: 12px;
+}
+
+.noticeReadTag {
+  color: @color-text-secondary;
+  font-size: 12px;
+}
+
+.noticeUnreadBadge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: @color-scrollbar;
+  color: #fff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+}
+
 .terminalTableHeader{
   color: @color-primary;
 }

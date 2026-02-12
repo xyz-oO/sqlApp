@@ -30,7 +30,7 @@ export default function NewUserModal({
               style={{ width: '600px' }}
             >
               <div className={styles.terminalModalHeader}>
-                <span>新增用户</span>
+                <span>新建用户</span>
                 <button className={styles.terminalModalClose} type="button" onClick={onCancel}>
                   ×
                 </button>
