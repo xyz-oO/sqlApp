@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { request } from 'umi';
-import { loginService } from '../services/loginService';
+import { LoginService } from '../services/LoginService';
 
 const AppContext = createContext(null);
 
@@ -22,6 +22,7 @@ export const AppProvider = ({ children }) => {
             loginAt: new Date().toISOString(),
           });
         }
+    
       } catch (error) {
         if (mounted) {
           setSession(null);
@@ -41,9 +42,9 @@ export const AppProvider = ({ children }) => {
   const login = async ({ username, password }) => {
     setLoading(true);
     try {
-      const data = await loginService({ username, password });
+      const data = await LoginService({ username, password });
       if (!data?.sessionId) {
-        throw new Error('Login failed (missing session id).');
+        throw new Error('Login failed.');
       }
       const nextSession = {
         username,

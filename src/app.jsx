@@ -19,11 +19,11 @@ const getCookie = (name) => {
 };
 
 export const request = {
-  timeout: 10000,
+  timeout: 60000,
   requestInterceptors: [
     (url, options) => {
       const nextUrl = shouldPrefix(url) ? `${API_PREFIX}${url}` : url;
-      const sessionId = getCookie('sessionId');
+  
       return {
         url: nextUrl,
         options: {
@@ -31,7 +31,6 @@ export const request = {
           credentials: 'include',
           headers: {
             ...options?.headers,
-            ...(sessionId ? { Authorization: `Session ${sessionId}` } : {}),
           },
         },
       };

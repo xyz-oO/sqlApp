@@ -2,14 +2,14 @@
   {
     "id": "d3775cd5-8f6a-4209-8df0-8f7f97c1aa2d",
     "menu_name": "mytable8",
-    "sql": "select user_id,status,lang,subject,title from notes;",
+    "sql": "select \n   subject_id,\n   searchkeys,\n   lang,\n   title\n  from notes;",
     "dbname": "tydb",
     "created_at": "2026-02-11T02:28:52.344477Z"
   },
   {
     "id": "2abd28e7-4870-4da1-958d-8faf221e9f56",
     "menu_name": "user table",
-    "sql": "select nickname,user_role,login_count from users;",
+    "sql": "select nickname,user_role,login_count,create_time, login_count as time from users;",
     "dbname": "tydb",
     "created_at": "2026-02-11T03:01:03.592586Z"
   },
@@ -17,7 +17,7 @@
     "id": "b1d3fd37-392d-44cd-8ca0-f3528e7aeb48",
     "menu_name": "mytable",
     "sql": "select abc from user;",
-    "dbname": "tydb11",
+    "dbname": "tydb2",
     "created_at": "2026-02-11T08:12:34.822634Z"
   }
 ]

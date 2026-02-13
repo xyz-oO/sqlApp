@@ -13,10 +13,12 @@ export default function EditRowModal({
   error,
 }) {
   const [formData, setFormData] = useState({});
+  const [originalRowData, setOriginalRowData] = useState({});
 
   useEffect(() => {
     if (rowData) {
       setFormData(rowData);
+      setOriginalRowData(rowData);
     }
   }, [rowData]);
 
@@ -25,6 +27,17 @@ export default function EditRowModal({
       ...prev,
       [key]: value
     }));
+  };
+
+  // Calculate only changed fields
+  const getChangedFields = () => {
+    const changedFields = {};
+    Object.keys(formData).forEach(key => {
+      if (formData[key] !== originalRowData[key]) {
+        changedFields[key] = formData[key];
+      }
+    });
+    return changedFields;
   };
 
   if (!open) {
@@ -55,7 +68,7 @@ export default function EditRowModal({
             ×
           </button>
         </div>
-        <div className={styles.terminalModalBody}>
+        <div className={styles.terminalModalBody} style={{ maxHeight: '70vh', overflowY: 'auto', paddingRight: '8px' }}>
           {dataColumns.map(col => {
             const fieldKey = col.dataIndex || col.key;
             return (
@@ -63,7 +76,7 @@ export default function EditRowModal({
                 <label>{col.title}</label>
                 <TerminalTextInput
                   placeholder={col.title}
-                  value={formData[fieldKey] !== undefined ? formData[fieldKey] : ''}
+                  value={formData[fieldKey] != null ? formData[fieldKey] : ''}
                   onChange={(value) => handleFieldChange(fieldKey, value)}
                 />
               </div>
@@ -88,7 +101,7 @@ export default function EditRowModal({
           <Button
             className={styles.primaryButton}
             type="button"
-            onClick={() => onSave(formData)}
+            onClick={() => onSave(getChangedFields())}
             disabled={saving}
           >
             {saving ? '保存中...' : '保存'}

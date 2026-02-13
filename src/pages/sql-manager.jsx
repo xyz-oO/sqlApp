@@ -145,11 +145,7 @@ export default function SqlManagerPage() {
   const loadDbConfig = async () => {
     setDbConfigLoading(true);
     try {
-      const data = await request('/db/config', {
-        headers: {
-          'X-Username': session?.username || 'user'
-        }
-      });
+      const data = await request('/db/config');
       setDbConfigs(data?.configs || []);
     } catch (error) {
       console.error('Error loading db configs:', error);
@@ -264,9 +260,6 @@ export default function SqlManagerPage() {
       if (editingSqlConfig) {
         await request(`/sql/config/${editingSqlConfig.id}`, {
           method: 'PUT',
-          headers: {
-            'X-Username': session?.username || 'user'
-          },
           data: {
             menu_name: menuName,
             sql: sqlContent,
@@ -276,9 +269,6 @@ export default function SqlManagerPage() {
       } else {
         await request('/sql/config', {
           method: 'POST',
-          headers: {
-            'X-Username': session?.username || 'user'
-          },
           data: {
             menu_name: menuName,
             sql: sqlContent,
@@ -415,6 +405,18 @@ export default function SqlManagerPage() {
               ]}
               className={styles.terminalTable}
               size="middle"
+              locale={{
+                emptyText: (
+                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                    <img 
+                      src="./logo.png" 
+                      alt="empty" 
+                      style={{ width: '80px', height: '80px' }} 
+                    />
+                    <p style={{ marginTop: '16px', color: '#666' }}>暂无数据</p>
+                  </div>
+                ),
+              }}
             />
           )}
         </div>

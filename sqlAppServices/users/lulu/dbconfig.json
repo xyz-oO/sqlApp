@@ -1,10 +1,18 @@
 [
   {
     "id": "31420c82-89a0-4ea7-b5de-403e2c5c0ea0",
-    "host": "127.0.0.1",
+    "host": "localhost",
     "port": "3306",
     "database": "tydb",
     "user": "root",
     "password": "SF1GV1RY"
+  },
+  {
+    "id": "7d3ef36c-6bb5-41b9-98ba-c1eb6cb5bcc7",
+    "host": "127.0.0.1",
+    "port": "2323",
+    "database": "tydb2",
+    "user": "root",
+    "password": "EAkfBxICDA8FFw=="
   }
 ]

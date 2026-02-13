@@ -1,6 +1,6 @@
 import { request } from 'umi';
 
-export const loginService = async ({ username, password }) => {
+export const LoginService = async ({ username, password }) => {
   try {
     return await request('/login', {
       method: 'POST',
@@ -13,4 +13,3 @@ export const loginService = async ({ username, password }) => {
     throw error;
   }
 };
-

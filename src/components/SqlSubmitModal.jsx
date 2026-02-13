@@ -70,11 +70,12 @@ export default function SqlSubmitModal({
             <label>SQL内容</label>
             <textarea
               className={styles.terminalTextArea}
-              rows={6}
+              rows={18}
               placeholder="Write SQL here..."
               spellCheck={false}
               value={sqlContent}
               onChange={(e) => onSqlContentChange(e.target.value)}
+              style={{ minHeight: '300px', fontSize: '14px', fontFamily: 'SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace' }}
             />
           </div>
           {error && (

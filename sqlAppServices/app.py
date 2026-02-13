@@ -150,22 +150,15 @@ def _save_sql_config(username, config):
 
 
 def _get_username_from_request():
-    username = request.headers.get("X-Username")
-    if username:
-        return username
-    session_id = request.headers.get("X-Session-Id")
     token = request.cookies.get("sessionId")
-    if not session_id and not token:
+
+    if not token:
         return None
-    if not session_id and token:
-        try:
-            data = _decode_session(token)
-            return data.get("username")
-        except jwt.PyJWTError:
-            return None
-    session = SESSIONS.get(session_id)
-    if session:
-        return session.get("username")
+    try:
+        data = _decode_session(token)
+        return data.get("username")
+    except jwt.PyJWTError:
+        return None
     return None
 
 
@@ -227,7 +220,7 @@ def login():
 @app.post("/api/logout")
 def logout():
     payload = request.get_json(silent=True) or {}
-    session_id = payload.get("sessionId") or request.headers.get("X-Session-Id")
+    session_id = payload.get("sessionId")
     if session_id:
         SESSIONS.pop(session_id, None)
     response = jsonify({"ok": True})
@@ -237,20 +230,18 @@ def logout():
 
 @app.get("/api/session")
 def get_session():
-    session_id = request.headers.get("X-Session-Id")
     token = request.cookies.get("sessionId")
-    if not session_id and not token:
+    if not token:
         response = jsonify({"ok": False})
         response.delete_cookie("sessionId")
         return response
-    if not session_id and token:
-        try:
-            data = _decode_session(token)
-            session_id = data.get("sessionId")
-        except jwt.PyJWTError:
-            response = jsonify({"ok": False})
-            response.delete_cookie("sessionId")
-            return response
+    try:
+        data = _decode_session(token)
+        session_id = data.get("sessionId")
+    except jwt.PyJWTError:
+        response = jsonify({"ok": False})
+        response.delete_cookie("sessionId")
+        return response
     session = SESSIONS.get(session_id)
     if not session:
         response = jsonify({"ok": False})
@@ -407,7 +398,7 @@ def get_db_config():
     users = _load_users()
     user = next((item for item in users if item.get("username") == username), None)
     if not user:
-        return jsonify({"error": "user not found"}), 404
+        return jsonify({"error": f"User '{username}' not found. Please login again."}), 404
     configs = _load_db_config(username)
     return jsonify({"configs": configs, "missing": not bool(configs)})
 
@@ -506,6 +497,7 @@ def execute_sql():
         payload = request.get_json(silent=True) or {}
         db_config = payload.get("dbConfig")
         sql = payload.get("sql")
+     
         params = payload.get("params")
 
         if not db_config or not sql:
@@ -520,12 +512,19 @@ def execute_sql():
         )
 
         with engine.connect() as connection:
+            # Log the received SQL and params for debugging
+            # print('Received SQL:', sql)
+            # print('Received params:', params)
+            
             if params:
                 result = connection.execute(text(sql), params)
             else:
                 result = connection.execute(text(sql))
             # Commit the transaction for UPDATE/INSERT/DELETE statements
             connection.commit()
+            
+            # Log the number of rows affected
+            # print('Rows affected:', result.rowcount)
             # Convert result to list of dictionaries only if it returns rows
             results = []
             if result.returns_rows:
@@ -581,6 +580,7 @@ def get_sql_config():
 @app.get("/api/sql/config/<config_id>")
 def get_sql_config_by_id(config_id):
     username = _get_username_from_request()
+   
     if not username:
         return jsonify({"error": "unauthorized"}), 401
     configs = _load_sql_config(username)
@@ -606,6 +606,7 @@ def delete_sql_config(config_id):
 @app.put("/api/sql/config/<config_id>")
 def update_sql_config(config_id):
     username = _get_username_from_request()
+    
     if not username:
         return jsonify({"error": "unauthorized"}), 401
     payload = request.get_json(silent=True) or {}

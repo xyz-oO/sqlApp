@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
-import { request } from 'umi';
 import { useApp } from './appContext';
+import { ConfigService } from '../services/ConfigService';
 
 const SqlConfigContext = createContext(null);
 
@@ -14,8 +14,9 @@ export function SqlConfigProvider({ children }) {
     
     setLoading(true);
     try {
-      const data = await request('/sql/config');
-      setSqlConfigs(data?.configs || []);
+      const sqlConfigs = await ConfigService.getSqlConfigs();
+      
+      setSqlConfigs(sqlConfigs);
     } catch (error) {
       console.error('Failed to load SQL configs:', error);
       setSqlConfigs([]);

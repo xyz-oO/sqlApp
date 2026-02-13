@@ -348,6 +348,18 @@ export default function UserManagerPage() {
                     cursor:'pointer'
                   }
                 })}
+                locale={{
+                  emptyText: (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                      <img 
+                        src="./logo.png" 
+                        alt="empty" 
+                        style={{ width: '80px', height: '80px' }} 
+                      />
+                      <p style={{ marginTop: '16px', color: '#666' }}>暂无数据</p>
+                    </div>
+                  ),
+                }}
             />
           </Card>
           <ChangePasswordModal

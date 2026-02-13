@@ -3,12 +3,12 @@ import { useParams } from 'umi';
 import { request } from 'umi';
 import styles from '../../themes/terminal.less';
 import SidebarNav from '../../components/SidebarNav';
-import { Table, Button, Space, Input } from 'antd';
+import { Table, Button } from 'antd';
 import { useApp } from '../../contexts/appContext';
 import EditRowModal from '../../components/EditRowModal';
 import SqlSubmitModal from '../../components/SqlSubmitModal';
 import TerminalAlert from '../../components/TerminalAlert';
-import { SettingOutlined, SearchOutlined } from '@ant-design/icons';
+import { SettingOutlined } from '@ant-design/icons';
 import TerminalTextInput from '../../components/TerminalTextInput';
 
 export default function SqlPage() {
@@ -74,9 +74,6 @@ export default function SqlPage() {
           menu_name: menuName,
           sql: sqlContent,
           dbname: dbname,
-        },
-        headers: {
-          'X-Username': session?.username || 'user'
         }
       });
       
@@ -108,11 +105,14 @@ export default function SqlPage() {
     setSaving(true);
     setEditError('');
     try {
-      const dbConfigData = await request('/db/config', {
-        headers: {
-          'X-Username': session?.username || 'user'
-        }
-      });
+      // Check if any fields were changed
+      if (Object.keys(formData).length === 0) {
+        setEditError('No fields were changed');
+        setSaving(false);
+        return;
+      }
+
+      const dbConfigData = await request('/db/config');
 
       const dbConfigs = dbConfigData?.configs || [];
       const targetDbConfig = dbConfigs.find(config => config.database === sqlConfig.dbname);
@@ -135,6 +135,11 @@ export default function SqlPage() {
                !key.toLowerCase().includes('create_') && 
                !key.toLowerCase().includes('update_');
       });
+
+      if (columns.length === 0) {
+        throw new Error('No valid columns to update');
+      }
+
       const setClause = columns.map(key => `${key} = :${key}`).join(', ');
       
       const params = {};
@@ -143,23 +148,24 @@ export default function SqlPage() {
       });
 
       const whereColumns = Object.keys(editingRow).filter(key => {
-        // Exclude time-related columns and expression columns
+        // Exclude time-related columns and columns being updated
         const lowerKey = key.toLowerCase();
-        // return !lowerKey.includes('time') && 
-        //        !lowerKey.includes('create_') && 
-        //        !lowerKey.includes('update_') && 
-        //        !lowerKey.includes('date') &&
-        //        !key.includes('(') &&
-        //        !key.includes(')');
-
-        return key;
+        return !lowerKey.includes('time') && 
+               !lowerKey.includes('create_') && 
+               !lowerKey.includes('update_') && 
+               !lowerKey.includes('date') &&
+               !Object.keys(formData).includes(key); // Exclude columns being updated
       });
+
+      if (whereColumns.length === 0) {
+        throw new Error('No valid columns for WHERE clause');
+      }
 
       const whereClause = whereColumns
         .map(key => `${key} = :orig_${key}`)
         .join(' AND ');
 
-      Object.keys(editingRow).forEach(key => {
+      whereColumns.forEach(key => {
         params[`orig_${key}`] = editingRow[key];
       });
 
@@ -167,9 +173,6 @@ export default function SqlPage() {
 
       await request('/api/execute-sql', {
         method: 'POST',
-        headers: {
-          'X-Username': session?.username || 'user'
-        },
         data: {
           dbConfig: targetDbConfig,
           sql: updateSql,
@@ -177,21 +180,26 @@ export default function SqlPage() {
         }
       });
 
-      const resultData = await request('/api/execute-sql', {
-        method: 'POST',
-        headers: {
-          'X-Username': session?.username || 'user'
-        },
-        data: {
-          dbConfig: targetDbConfig,
-          sql: sqlConfig.sql
-        }
+      // Only update the specific row in the table data instead of refreshing the entire table
+      setQueryResults(prevResults => {
+        return prevResults.map(row => {
+          // Find the row that was edited
+          const isEditingRow = Object.keys(editingRow).every(key => {
+            return row[key] === editingRow[key];
+          });
+          
+          if (isEditingRow) {
+            // Update only the changed fields
+            return {
+              ...row,
+              ...formData
+            };
+          }
+          return row;
+        });
       });
-
-      const results = resultData?.results || [];
-      setQueryResults(results);
       setEditModalOpen(false);
-      setEditingRow(null);
+      // Don't set editingRow to null to preserve row background color
       setNotice('更新成功');
       setTimeout(() => setNotice(''), 3000);
     } catch (err) {
@@ -203,7 +211,7 @@ export default function SqlPage() {
 
   const handleCloseEditModal = () => {
     setEditModalOpen(false);
-    setEditingRow(null);
+    // Don't set editingRow to null to preserve row background color
     setEditError('');
   };
 
@@ -235,11 +243,7 @@ export default function SqlPage() {
       setQueryError('');
       try {
         // Get database configuration based on dbname
-        const dbConfigData = await request('/db/config', {
-          headers: {
-            'X-Username': session?.username || 'user'
-          }
-        });
+        const dbConfigData = await request('/db/config');
 
         const dbConfigs = dbConfigData?.configs || [];
         const targetDbConfig = dbConfigs.find(config => config.database === sqlConfig.dbname);
@@ -251,9 +255,6 @@ export default function SqlPage() {
         // Execute SQL query
         const resultData = await request('/api/execute-sql', {
           method: 'POST',
-          headers: {
-            'X-Username': session?.username || 'user'
-          },
           data: {
             dbConfig: targetDbConfig,
             sql: sqlConfig.sql
@@ -267,12 +268,17 @@ export default function SqlPage() {
         if (results.length > 0) {
           let columnNames = [];
           const sql = sqlConfig.sql.trim();
-          const selectMatch = sql.match(/^\s*SELECT\s+(.+?)\s+FROM/i);
+          
+          // Normalize SQL: remove newlines and extra spaces
+          const normalizedSql = sql.replace(/\s+/g, ' ');
+          const selectMatch = normalizedSql.match(/^\s*SELECT\s+(.+?)\s+FROM/i);
+          
           if (selectMatch) {
             const selectPart = selectMatch[1];
             // Split by commas, ignoring commas inside quotes
             const columns = selectPart.split(/,\s*(?![^"'\(]*["'\)])/);
             columnNames = columns.map(col => {
+              col = col.trim(); // Trim spaces around each column
               // Extract column name from expression
               const aliasMatch = col.match(/\s+AS\s+(\w+)/i);
               if (aliasMatch) {
@@ -283,13 +289,14 @@ export default function SqlPage() {
               if (idMatch) {
                 return idMatch[1].replace(/[`]/g, '');
               }
-              return col.trim();
+              return col;
             });
           }
           
           // Fallback to first row keys if SQL parsing fails
           if (columnNames.length === 0) {
             const firstRow = results[0];
+            // Use the order of columns from the SQL result to maintain consistency
             columnNames = Object.keys(firstRow);
           }
           
@@ -483,10 +490,26 @@ export default function SqlPage() {
               <Table 
                 dataSource={filteredResults} 
                 columns={columns} 
-                rowKey={(record, index) => index}
+                rowKey={(record) => {
+                  // Use a combination of record values to generate a unique key
+                  // This ensures we don't rely on the deprecated index parameter
+                  return Object.values(record).join('-');
+                }}
                 className={styles.terminalTable}
                 size="middle"
                 onChange={handleTableChange}
+                locale={{
+                  emptyText: (
+                    <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                      <img 
+                        src="./../logo.png" 
+                        alt="empty" 
+                        style={{ width: '80px', height: '80px' }} 
+                      />
+                      <p style={{ marginTop: '16px', color: '#666' }}>暂无数据</p>
+                    </div>
+                  ),
+                }}
               />
             </div>
           ) : (
