@@ -517,8 +517,8 @@ def execute_sql():
             # print('Received SQL:', sql)
             
             # For UPDATE statements, first verify that WHERE condition matches exactly one row
-            sql_upper = sql.strip().upper()
-            if sql_upper.startswith('UPDATE'):
+            sql_upper = sql.strip()
+            if sql_upper.startswith('UPDATE') or sql_upper.startswith('update') :
                 # Extract table name and WHERE clause using regex
                 # Use more flexible regex pattern to handle various whitespace
                 match = re.match(r'UPDATE\s+(\w+)\s+SET\s+.*?\s+WHERE\s+(.+)', sql_upper, re.IGNORECASE)
