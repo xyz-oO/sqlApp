@@ -8,11 +8,11 @@
     "password": "SF1GV1RY"
   },
   {
-    "id": "7d3ef36c-6bb5-41b9-98ba-c1eb6cb5bcc7",
-    "host": "127.0.0.1",
-    "port": "2323",
+    "id": "8be16c9f-02d1-4e04-8849-4af12cf0598a",
+    "host": "localhost",
+    "port": "8392",
     "database": "tydb2",
     "user": "root",
-    "password": "EAkfBxICDA8FFw=="
+    "password": "SF1GV1RY"
   }
 ]

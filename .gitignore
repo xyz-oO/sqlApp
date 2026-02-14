@@ -15,3 +15,4 @@
 .DS_Store
 .npmrc
 /sqlAppServices/__pycache__
+.vscode

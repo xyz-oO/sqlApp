@@ -196,6 +196,29 @@
   background: @color-dark;
   color: @color-primary;
   border-bottom: 1px solid @color-border-medium;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+.terminalTable :global(.ant-table-thead > tr > th:hover) {
+  background: @color-bg-lighter !important;
+}
+
+.terminalTable :global(.ant-table-thead > tr > th.ant-table-column-sort) {
+  background: @color-bg-lighter !important;
+}
+// array sort icon
+.terminalTable :global(.ant-table-column-sorter) {
+  color: @color-error !important;
+}
+
+.terminalTable :global(.ant-table-column-sorter:hover) {
+  color: @color-bg-lighter !important;
+}
+
+.terminalTable :global(.ant-table-column-sorter-up.active),
+.terminalTable :global(.ant-table-column-sorter-down.active) {
+  color: @color-error !important;
 }
 .terminalTable :global(.ant-table-tbody > tr > td){
   background: @color-dark;
@@ -273,6 +296,12 @@
   background: @color-bg-light;
   border-color: @color-border-light;
   color: @color-primary;
+}
+
+// cancel button when saving
+.terminalModalCancelSaving {
+  color: @color-primary !important;
+  border-color: @color-border-light !important;
 }
 
 

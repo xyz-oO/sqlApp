@@ -91,7 +91,7 @@ export default function EditRowModal({
         </div>
         <div className={styles.terminalModalFooter}>
           <Button
-            className={styles.secondaryButton}
+            className={`${styles.secondaryButton} ${saving ? styles.terminalModalCancelSaving: ''}`}
             type="button"
             onClick={onCancel}
             disabled={saving}

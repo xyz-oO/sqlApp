@@ -10,6 +10,7 @@ import SqlSubmitModal from '../../components/SqlSubmitModal';
 import TerminalAlert from '../../components/TerminalAlert';
 import { SettingOutlined } from '@ant-design/icons';
 import TerminalTextInput from '../../components/TerminalTextInput';
+import { SqlService } from '../../services/sqlService';
 
 export default function SqlPage() {
   const { id } = useParams();
@@ -35,6 +36,8 @@ export default function SqlPage() {
   const [dbname, setDbname] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [sortField, setSortField] = useState(null);
+  const [sortOrder, setSortOrder] = useState(null);
 
   const handleEditRow = (record) => {
     setEditingRow(record);
@@ -68,7 +71,7 @@ export default function SqlPage() {
 
     setIsSubmitting(true);
     try {
-      await request(`/sql/config/${id}`, {
+      const res = await request(`/sql/config/${id}`, {
         method: 'PUT',
         data: {
           menu_name: menuName,
@@ -107,7 +110,7 @@ export default function SqlPage() {
     try {
       // Check if any fields were changed
       if (Object.keys(formData).length === 0) {
-        setEditError('No fields were changed');
+        setEditError('没有字段被修改');
         setSaving(false);
         return;
       }
@@ -135,18 +138,21 @@ export default function SqlPage() {
                !key.toLowerCase().includes('create_') && 
                !key.toLowerCase().includes('update_');
       });
-
       if (columns.length === 0) {
         throw new Error('No valid columns to update');
       }
 
-      const setClause = columns.map(key => `${key} = :${key}`).join(', ');
+      const setClause = columns.map(key => {
+        const value = formData[key];
+        if (typeof value === 'string') {
+          return `${key} = '${value.replace(/'/g, "''")}'`;
+        } else if (value === null || value === undefined) {
+          return `${key} = NULL`;
+        } else {
+          return `${key} = ${value}`;
+        }
+      }).join(', ');
       
-      const params = {};
-      columns.forEach(key => {
-        params[key] = formData[key];
-      });
-
       const whereColumns = Object.keys(editingRow).filter(key => {
         // Exclude time-related columns and columns being updated
         const lowerKey = key.toLowerCase();
@@ -154,31 +160,29 @@ export default function SqlPage() {
                !lowerKey.includes('create_') && 
                !lowerKey.includes('update_') && 
                !lowerKey.includes('date') &&
-               !Object.keys(formData).includes(key); // Exclude columns being updated
+               !Object.keys(formData).includes(key) && // Exclude columns being updated
+               editingRow[key] != null; // Ensure value is not null
       });
-
+      
       if (whereColumns.length === 0) {
         throw new Error('No valid columns for WHERE clause');
       }
 
-      const whereClause = whereColumns
-        .map(key => `${key} = :orig_${key}`)
-        .join(' AND ');
-
-      whereColumns.forEach(key => {
-        params[`orig_${key}`] = editingRow[key];
-      });
+      const whereClause = whereColumns.map(key => {
+        const value = editingRow[key];
+        if (typeof value === 'string') {
+          return `${key} = '${value.replace(/'/g, "''")}'`;
+        } else {
+          return `${key} = ${value}`;
+        }
+      }).join(' AND ');
 
       const updateSql = `UPDATE ${tableName} SET ${setClause} WHERE ${whereClause}`;
+      
+      console.log('Frontend SQL:', updateSql);
 
-      await request('/api/execute-sql', {
-        method: 'POST',
-        data: {
-          dbConfig: targetDbConfig,
-          sql: updateSql,
-          params: params
-        }
-      });
+      // Execute UPDATE query
+      await SqlService.updateSql(targetDbConfig, updateSql);
 
       // Only update the specific row in the table data instead of refreshing the entire table
       setQueryResults(prevResults => {
@@ -203,6 +207,7 @@ export default function SqlPage() {
       setNotice('更新成功');
       setTimeout(() => setNotice(''), 3000);
     } catch (err) {
+      console.log('Error  row:', err);
       setEditError(err?.response?.data?.error || 'Failed to update row');
     } finally {
       setSaving(false);
@@ -215,8 +220,17 @@ export default function SqlPage() {
     setEditError('');
   };
 
-  const handleTableChange = (pagination, filters) => {
+  const handleTableChange = (pagination, filters, sorter) => {
     setFilters(filters);
+    
+    // Handle sorting
+    if (sorter && sorter.field) {
+      setSortField(sorter.field);
+      setSortOrder(sorter.order);
+    } else {
+      setSortField(null);
+      setSortOrder(null);
+    }
   };
 
   useEffect(() => {
@@ -253,13 +267,7 @@ export default function SqlPage() {
         }
 
         // Execute SQL query
-        const resultData = await request('/api/execute-sql', {
-          method: 'POST',
-          data: {
-            dbConfig: targetDbConfig,
-            sql: sqlConfig.sql
-          }
-        });
+        const resultData = await SqlService.executeSql(targetDbConfig, sqlConfig.sql);
 
         const results = resultData?.results || [];
         setQueryResults(results);
@@ -368,6 +376,26 @@ export default function SqlPage() {
       title: key,
       dataIndex: key,
       key: key,
+      sorter: (a, b) => {
+        const aVal = a[key];
+        const bVal = b[key];
+        
+        // Handle null/undefined values
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return -1;
+        if (bVal == null) return 1;
+        
+        // Handle numeric values
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return aVal - bVal;
+        }
+        
+        // Handle string values
+        const aStr = String(aVal).toLowerCase();
+        const bStr = String(bVal).toLowerCase();
+        return aStr.localeCompare(bStr);
+      },
+      sortOrder: sortField === key ? sortOrder : null,
       render: (text) => <span className={styles.terminalText}>{text}</span>
     }));
     // Combine edit column, sequence column with data columns
@@ -376,11 +404,32 @@ export default function SqlPage() {
 
   const columns = generateColumns();
 
-  // Apply filters to query results
+  // Apply filters and sorting to query results
   const filteredResults = queryResults.filter(record => {
     return Object.entries(filters).every(([key, value]) => {
       return String(record[key]).toLowerCase().includes(value.toLowerCase());
     });
+  }).sort((a, b) => {
+    if (!sortField || !sortOrder) return 0;
+    
+    const aVal = a[sortField];
+    const bVal = b[sortField];
+    
+    // Handle null/undefined values
+    if (aVal == null && bVal == null) return 0;
+    if (aVal == null) return -1;
+    if (bVal == null) return 1;
+    
+    // Handle numeric values
+    if (typeof aVal === 'number' && typeof bVal === 'number') {
+      return sortOrder === 'ascend' ? aVal - bVal : bVal - aVal;
+    }
+    
+    // Handle string values
+    const aStr = String(aVal).toLowerCase();
+    const bStr = String(bVal).toLowerCase();
+    const comparison = aStr.localeCompare(bStr);
+    return sortOrder === 'ascend' ? comparison : -comparison;
   });
 
   return (
@@ -499,6 +548,9 @@ export default function SqlPage() {
                 size="middle"
                 onChange={handleTableChange}
                 locale={{
+                  triggerDesc: '点击降序',
+                  triggerAsc: '点击升序',
+                  cancelSort: '取消排序',
                   emptyText: (
                     <div style={{ textAlign: 'center', padding: '40px 0' }}>
                       <img 

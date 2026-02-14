@@ -32,6 +32,7 @@ export default function UserManagerPage() {
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState('');
   const [successNotice, setSuccessNotice] = useState('');
+  const [errorNotice, setErrorNotice] = useState('');
 
   useEffect(() => {
     // Check if user is not SUPER role
@@ -213,8 +214,20 @@ export default function UserManagerPage() {
         method: 'POST',
         data: { status: nextStatus },
       });
+      // Set success notice
+      setSuccessNotice(`用户 ${username} 状态更新成功！`);
+      // Clear success notice after 3 seconds
+      setTimeout(() => {
+        setSuccessNotice('');
+      }, 3000);
     } catch (error) {
       setUsers(previousUsers);
+      // Set error notice
+      setErrorNotice(`用户 ${username} 状态更新失败！`);
+      // Clear error notice after 3 seconds
+      setTimeout(() => {
+        setErrorNotice('');
+      }, 3000);
     }
   };
 
@@ -305,11 +318,14 @@ export default function UserManagerPage() {
       <div className={styles.dashboard}>
         <SidebarNav userLabel="用户管理" sqlLabel="SQL管理" />
         <section className={styles.dashboardContent}>
-          {/* <TerminalAlert message={"create user success"} type="success" showIcon={true} description="用户创建成功"/> */}
-
           {successNotice && (
             <div style={{ marginBottom: 16 }}>
               <TerminalAlert message={successNotice} type="success" showIcon={true} />
+            </div>
+          )}
+          {errorNotice && (
+            <div style={{ marginBottom: 16 }}>
+              <TerminalAlert message={errorNotice} type="error" showIcon={true} />
             </div>
           )}
           <div className={styles.dashboardHeader}>

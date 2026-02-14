@@ -41,6 +41,12 @@
       "md5": "571b586897a1d41b4d0109c51c459fe2",
       "status": 0,
       "role": "USER"
+    },
+    {
+      "username": "bbd",
+      "md5": "dc52ebcf6dd209e6541afe916cfc5f7e",
+      "status": 1,
+      "role": "USER"
     }
   ]
 }

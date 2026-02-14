@@ -1,5 +1,6 @@
 import os
 import uuid
+import re
 from datetime import datetime, timedelta
 import urllib.parse 
 import hashlib
@@ -496,9 +497,9 @@ def execute_sql():
     try:
         payload = request.get_json(silent=True) or {}
         db_config = payload.get("dbConfig")
+        
         sql = payload.get("sql")
-     
-        params = payload.get("params")
+        # params = payload.get("params")
 
         if not db_config or not sql:
             return jsonify({"error": "Missing dbConfig or sql"}), 400
@@ -512,24 +513,57 @@ def execute_sql():
         )
 
         with engine.connect() as connection:
-            # Log the received SQL and params for debugging
+            # Log the received SQL for debugging
             # print('Received SQL:', sql)
-            # print('Received params:', params)
             
-            if params:
-                result = connection.execute(text(sql), params)
-            else:
-                result = connection.execute(text(sql))
+            # For UPDATE statements, first verify that WHERE condition matches exactly one row
+            sql_upper = sql.strip().upper()
+            if sql_upper.startswith('UPDATE'):
+                # Extract table name and WHERE clause using regex
+                # Use more flexible regex pattern to handle various whitespace
+                match = re.match(r'UPDATE\s+(\w+)\s+SET\s+.*?\s+WHERE\s+(.+)', sql_upper, re.IGNORECASE)
+                if not match:
+                    print('Failed to parse UPDATE statement:', sql_upper)
+                    return jsonify({"error": "Invalid UPDATE statement format"}), 400
+                
+                table_name = match.group(1)
+                where_clause = match.group(2)
+                # Create a SELECT COUNT query to verify row count
+                select_sql = f"SELECT COUNT(*) as count FROM {table_name} WHERE {where_clause}"
+                # print('Verification SQL:', select_sql)
+                
+                try:
+                    # Execute SELECT query to verify row count
+                    verify_result = connection.execute(text(select_sql))
+                    verify_row = verify_result.fetchone()
+                    row_count = verify_row[0] if verify_row else 0
+                    print('Row count:', row_count)
+                    
+                    if row_count == 0:
+                        return jsonify({"error": "没有找到匹配 WHERE 条件的行，无法更新。"}), 400
+                    elif row_count > 1:
+                        return jsonify({"error": f"找到 {row_count} 行匹配 WHERE 条件，无法更新。"}), 400
+                except Exception as e:
+                    print(f'Verification query failed: {str(e)}')
+                    return jsonify({"error": f"验证查询失败: {str(e)}"}), 400
+            
+            # Execute SQL query
+            result = connection.execute(text(sql))
             # Commit the transaction for UPDATE/INSERT/DELETE statements
             connection.commit()
             
             # Log the number of rows affected
-            # print('Rows affected:', result.rowcount)
+            
             # Convert result to list of dictionaries only if it returns rows
             results = []
             if result.returns_rows:
                 for row in result.mappings():
-                    results.append(dict(row))
+                    row_dict = dict(row)
+                    # Convert large integers to strings to avoid JavaScript precision loss
+                    for key, value in row_dict.items():
+                        if isinstance(value, int) and abs(value) > 9007199254740991:
+                            row_dict[key] = str(value)
+                    results.append(row_dict)
             return jsonify({"results": results})
 
     except Exception as e:
