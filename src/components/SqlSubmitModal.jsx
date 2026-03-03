@@ -42,7 +42,7 @@ export default function SqlSubmitModal({
               <label>
                 <span>目录名</span>
                  <Tooltip title="自定义目录名，将显示在主页左侧导航栏">
-                <QuestionCircleOutlined style={{ marginLeft: '6px', cursor: 'help', color: '#8dff9d', fontSize: '14px' }} />
+                <QuestionCircleOutlined className={styles.terminalHelpIcon} />
               </Tooltip>
               </label>
              
@@ -79,7 +79,7 @@ export default function SqlSubmitModal({
             />
           </div>
           {error && (
-            <div style={{ padding: '0 16px 16px', color: '#ff9a9a' }}>
+            <div className={styles.terminalModalError}>
               {error}
             </div>
           )}

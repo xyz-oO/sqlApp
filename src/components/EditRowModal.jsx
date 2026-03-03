@@ -83,8 +83,8 @@ export default function EditRowModal({
             );
           })}
           {error && (
-            <div style={{ marginBottom: 16, background: '#2d1d1d', border: '1px solid #4d2d2d', borderRadius: 8, padding: 12, color: '#ff9d9d' }}>
-              <div style={{ fontWeight: 'bold', marginBottom: 4 }}>错误</div>
+            <div className={styles.terminalErrorBox}>
+              <div className={styles.terminalErrorTitle}>错误</div>
               <div>{error}</div>
             </div>
           )}

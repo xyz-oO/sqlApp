@@ -416,23 +416,15 @@ export default function UserManagerPage() {
                 </div>
                 <div className={styles.terminalModalBody}>
                   <div style={{ margin: '16px 0' }}>
-                    <div style={{ marginBottom: 8, fontSize: 14, color: '#f0f6fc' }}>
+                    <div className={styles.userManagerLabel}>
                       用户名:
                     </div>
-                    <div style={{ 
-                      padding: '12px', 
-                      backgroundColor: '#0d1117', 
-                      border: '1px solid #30363d', 
-                      borderRadius: '8px',
-                      color: '#f0f6fc',
-                      fontFamily: 'SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono, Courier New, monospace',
-                      fontSize: '14px'
-                    }}>
+                    <div className={styles.userManagerValue}>
                       {editingUser?.username}
                     </div>
                   </div>
                   <div style={{ margin: '24px 0' }}>
-                    <div style={{ marginBottom: 8, fontSize: 14, color: '#f0f6fc' }}>
+                    <div className={styles.userManagerLabel}>
                       角色:
                     </div>
                     <TerminalSelect
@@ -446,7 +438,7 @@ export default function UserManagerPage() {
                       style={{ width: '560px' }}
                     />
                   </div>
-                  {editError ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{editError}</div> : null}
+                  {editError ? <div className={styles.userManagerError}>{editError}</div> : null}
                 </div>
                 <div className={styles.terminalModalFooter}>
                   <button

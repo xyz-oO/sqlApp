@@ -55,17 +55,24 @@ export default function SqlPage() {
   };
 
   const handleSaveSqlConfig = async () => {
-    // Validate SQL content - prevent SELECT * statements
+    if (!menuName.trim() || !sqlContent.trim()) {
+      setSubmitError('请输入目录名和SQL内容');
+      return;
+    }
+
+    // Validate SQL content - only allow SELECT statements and prevent SELECT *
     const sql = sqlContent.trim().toLowerCase();
-    if (sql.startsWith('select')) {
-      // Extract the part between SELECT and FROM
-      const selectFromMatch = sql.match(/select\s+(.+?)\s+from/);
-      if (selectFromMatch) {
-        const selectList = selectFromMatch[1];
-        if (selectList.includes('*')) {
-          setSubmitError('不允许使用 SELECT *，请明确指定列名');
-          return;
-        }
+    if (!sql.startsWith('select')) {
+      setSubmitError('只允许输入 SELECT 语句');
+      return;
+    }
+    // Extract the part between SELECT and FROM
+    const selectFromMatch = sql.match(/select\s+(.+?)\s+from/);
+    if (selectFromMatch) {
+      const selectList = selectFromMatch[1];
+      if (selectList.includes('*')) {
+        setSubmitError('不允许使用 SELECT *，请明确指定列名');
+        return;
       }
     }
 
@@ -450,20 +457,12 @@ export default function SqlPage() {
                 className={styles.terminalIconButton}
                 onClick={handleEditSqlConfig}
               >
-                <SettingOutlined style={{ fontSize: '20px', color: '#696F75' }} />
+                <SettingOutlined className={styles.terminalSettingIcon} />
               </button>
             </div>
             <button
               type="button"
-              style={{
-                background: 'none',
-                border: 'none',
-                color: styles.terminalText2,
-                cursor: 'pointer',
-                fontSize: '16px',
-                padding: '0',
-                margin: '0'
-              }}
+              className={`${styles.terminalIconButton} ${styles.terminalText2}`}
               onClick={() => setDetailsCollapsed(!detailsCollapsed)}
             >
               {detailsCollapsed ? '▼' : '▶'}
@@ -484,14 +483,7 @@ export default function SqlPage() {
               </div>
               <div style={{ marginBottom: 16 }}>
                 <strong>SQL Query:</strong>
-                <pre style={{ 
-                  background: '#0b0f0c', 
-                  padding: '12px', 
-                  borderRadius: '8px', 
-                  overflow: 'auto',
-                  marginTop: '8px',
-                  color: styles.terminalText2
-                }}>
+                <pre className={styles.terminalSqlCode}>
                   {sqlConfig?.sql || 'No SQL content'}
                 </pre>
               </div>

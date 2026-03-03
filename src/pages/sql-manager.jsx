@@ -241,17 +241,20 @@ export default function SqlManagerPage() {
       return;
     }
 
-    // Validate SQL content - prevent SELECT * statements
+    // Validate SQL content - only allow SELECT statements and prevent SELECT *
     const sql = sqlContent.trim().toLowerCase();
-    if (sql.startsWith('select')) {
-      // Extract the part between SELECT and FROM
-      const selectFromMatch = sql.match(/select\s+(.+?)\s+from/);
-      if (selectFromMatch) {
-        const selectList = selectFromMatch[1];
-        if (selectList.includes('*')) {
-          setSubmitError('不允许使用 SELECT *，请明确指定列名');
-          return;
-        }
+   
+    if (!sql.startsWith('select')) {
+      setSubmitError('只允许输入 SELECT 语句');
+      return;
+    }
+    // Extract the part between SELECT and FROM
+    const selectFromMatch = sql.match(/select\s+(.+?)\s+from/);
+    if (selectFromMatch) {
+      const selectList = selectFromMatch[1];
+      if (selectList.includes('*')) {
+        setSubmitError('不允许使用 SELECT *，请明确指定列名');
+        return;
       }
     }
 

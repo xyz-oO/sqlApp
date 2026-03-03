@@ -28,16 +28,8 @@ export default function TerminalPasswordInput({
         className={`${styles.terminalPasswordField} ${className}`}
       />
       <span
+        className={styles.terminalPasswordToggleIcon}
         onClick={() => setPasswordVisible(!passwordVisible)}
-        style={{
-          position: 'absolute',
-          right: '16px',
-          top: '50%',
-          transform: 'translateY(-50%)',
-          cursor: 'pointer',
-          fontSize: '20px',
-          color: '#8dff9d',
-        }}
       >
         {passwordVisible ? '👁️' : '🙈'}
       </span>

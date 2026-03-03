@@ -9,7 +9,7 @@
   {
     "id": "2abd28e7-4870-4da1-958d-8faf221e9f56",
     "menu_name": "user table",
-    "sql": "select nickname,user_role,login_count,create_time, login_count as time from users;",
+    "sql": "select nickname,login_count from users",
     "dbname": "tydb",
     "created_at": "2026-02-11T03:01:03.592586Z"
   },
@@ -19,5 +19,12 @@
     "sql": "select nickname,user_role,login_count,create_time, login_count as time from users;",
     "dbname": "tydb",
     "created_at": "2026-02-14T02:33:08.403628Z"
+  },
+  {
+    "id": "e5995156-42d4-4593-b513-8fffcd50f6fd",
+    "menu_name": "nbu-policy",
+    "sql": "select policy,end from testabb",
+    "dbname": "tydb",
+    "created_at": "2026-03-03T00:25:55.254869Z"
   }
 ]

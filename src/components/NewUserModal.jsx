@@ -70,7 +70,7 @@ export default function NewUserModal({
                   />
                 </div>
                 
-                {error ? <div style={{ marginTop: 8, color: '#ff9a9a' }}>{error}</div> : null}
+                {error ? <div className={styles.terminalModalError}>{error}</div> : null}
               </div>
               <div className={styles.terminalModalFooter}>
                 <button

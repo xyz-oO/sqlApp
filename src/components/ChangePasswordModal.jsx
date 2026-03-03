@@ -47,7 +47,7 @@ export default function ChangePasswordModal({
                   />
             </div>
             {error ? (
-              <div style={{ marginTop: 8, color: '#ff9a9a' }}>{error}</div>
+              <div className={styles.terminalModalError}>{error}</div>
             ) : null}
           </div>
         </div>
