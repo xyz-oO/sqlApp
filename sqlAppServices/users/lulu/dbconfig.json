@@ -14,5 +14,13 @@
     "database": "tydb2",
     "user": "root",
     "password": "SF1GV1RY"
+  },
+  {
+    "id": "371ff566-859e-4535-aa8a-6bb91a1b28a7",
+    "host": "127.0.0.1",
+    "port": "3306",
+    "database": "finance",
+    "user": "root",
+    "password": "SF1GV1RY"
   }
 ]

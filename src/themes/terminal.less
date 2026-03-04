@@ -298,6 +298,49 @@
   color: @color-primary;
 }
 
+// Terminal-style Radio
+.terminalRadioGroup :global(.ant-radio-wrapper) {
+  color: @color-text;
+  margin-inline-end: 12px;
+}
+
+.terminalRadioGroup :global(.ant-radio-inner) {
+  background: @color-bg-lighter;
+  border-color: @color-border-light;
+}
+
+.terminalRadioGroup :global(.ant-radio-checked .ant-radio-inner) {
+  border-color: @color-primary;
+  background: @color-bg-lighter;
+}
+
+.terminalRadioGroup :global(.ant-radio-inner::after) {
+  background-color: @color-primary;
+}
+
+.terminalRadioGroup :global(.ant-radio-wrapper:hover .ant-radio-inner) {
+  border-color: @color-primary;
+}
+
+.terminalRadioGroup :global(.ant-radio-disabled + span),
+.terminalRadioGroup :global(.ant-radio-disabled .ant-radio-inner) {
+  opacity: 0.6;
+}
+
+// Terminal-style fieldset/legend (for chart type)
+.terminalFieldset {
+  border: 1px solid @color-border-medium;
+  border-radius: 10px;
+  padding: 12px 12px 10px;
+  background: @color-bg;
+}
+
+.terminalLegend {
+  padding: 0 8px;
+  color: @color-primary;
+  font-size: 12px;
+}
+
 // cancel button when saving
 .terminalModalCancelSaving {
   color: @color-primary !important;

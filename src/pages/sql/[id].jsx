@@ -8,9 +8,18 @@ import { useApp } from '../../contexts/appContext';
 import EditRowModal from '../../components/EditRowModal';
 import SqlSubmitModal from '../../components/SqlSubmitModal';
 import TerminalAlert from '../../components/TerminalAlert';
-import { SettingOutlined } from '@ant-design/icons';
+import { SettingOutlined, TableOutlined, LineChartOutlined } from '@ant-design/icons';
 import TerminalTextInput from '../../components/TerminalTextInput';
 import { SqlService } from '../../services/sqlService';
+import MyChart from '../../components/MyCharts';
+import ChartTypeRadioGroup from '../../components/ChartTypeRadioGroup';
+
+function _normalizeChartType(v) {
+  if (!v) return 'lineChart';
+  if (v === 'BarChart') return 'Bar-v-chart'; // legacy
+  if (['lineChart', 'Bar-v-chart', 'Bar-h-chart', 'PieChart'].includes(v)) return v;
+  return 'lineChart';
+}
 
 export default function SqlPage() {
   const { id } = useParams();
@@ -34,10 +43,16 @@ export default function SqlPage() {
   const [menuName, setMenuName] = useState('');
   const [sqlContent, setSqlContent] = useState('');
   const [dbname, setDbname] = useState('');
+  const [chartEnabled, setChartEnabled] = useState(false);
+  const [chartType, setChartType] = useState('lineChart');
+  const [resultView, setResultView] = useState('table'); // 'table' | 'chart'
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [sortField, setSortField] = useState(null);
   const [sortOrder, setSortOrder] = useState(null);
+  const [previewChartType, setPreviewChartType] = useState('lineChart');
+  const [yAxisMin, setYAxisMin] = useState('');
+  const [yAxisMax, setYAxisMax] = useState('');
 
   const handleEditRow = (record) => {
     setEditingRow(record);
@@ -49,6 +64,8 @@ export default function SqlPage() {
       setMenuName(sqlConfig.menu_name);
       setSqlContent(sqlConfig.sql);
       setDbname(sqlConfig.dbname || '');
+      setChartEnabled(!!sqlConfig.chartEnabled);
+      setChartType(sqlConfig.chart_type || 'lineChart');
       setEditSqlModalOpen(true);
       setSubmitError('');
     }
@@ -84,6 +101,8 @@ export default function SqlPage() {
           menu_name: menuName,
           sql: sqlContent,
           dbname: dbname,
+          chartEnabled: chartEnabled,
+          chart_type: chartType || 'lineChart',
         }
       });
       
@@ -96,6 +115,8 @@ export default function SqlPage() {
       setMenuName('');
       setSqlContent('');
       setDbname('');
+      setChartEnabled(false);
+      setChartType('lineChart');
     } catch (err) {
       setSubmitError(err?.response?.data?.error || '保存失败，请重试');
     } finally {
@@ -109,6 +130,8 @@ export default function SqlPage() {
     setMenuName('');
     setSqlContent('');
     setDbname('');
+    setChartEnabled(false);
+    setChartType('lineChart');
   };
 
   const handleSaveEdit = async (formData) => {
@@ -186,7 +209,6 @@ export default function SqlPage() {
 
       const updateSql = `UPDATE ${tableName} SET ${setClause} WHERE ${whereClause}`;
       
-      console.log('Frontend SQL:', updateSql);
 
       // Execute UPDATE query
       await SqlService.updateSql(targetDbConfig, updateSql);
@@ -245,6 +267,9 @@ export default function SqlPage() {
       try {
         const data = await request(`/sql/config/${id}`);
         setSqlConfig(data?.config || null);
+        setChartEnabled(!!data?.config?.chartEnabled);
+        setPreviewChartType(_normalizeChartType(data?.config?.chart_type) || 'lineChart');
+        setResultView('table');
       } catch (err) {
         setError(err?.response?.data?.error || 'Failed to load SQL configuration');
       } finally {
@@ -253,6 +278,13 @@ export default function SqlPage() {
     };
     fetchSqlConfig();
   }, [id]);
+
+  // Sync preview when config chart_type changes (e.g. after save)
+  useEffect(() => {
+    if (sqlConfig?.chart_type) {
+      setPreviewChartType(_normalizeChartType(sqlConfig.chart_type));
+    }
+  }, [sqlConfig?.chart_type]);
 
   useEffect(() => {
     const executeSqlQuery = async () => {
@@ -275,7 +307,7 @@ export default function SqlPage() {
 
         // Execute SQL query
         const resultData = await SqlService.executeSql(targetDbConfig, sqlConfig.sql);
-
+        
         const results = resultData?.results || [];
         setQueryResults(results);
 
@@ -503,8 +535,86 @@ export default function SqlPage() {
             </div>
           ) : queryResults.length > 0 ? (
             <div className={styles.dashboardPanel}>
-              <h3 className={styles.dashboardSubtitle}>Query Results</h3>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <h3 className={styles.dashboardSubtitle} style={{ margin: 0 }}>
+                  Query Results
+                </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <button
+                    type="button"
+                    className={`${styles.terminalIconButton} ${resultView === 'table' ? styles.terminalText2 : ''}`}
+                    onClick={() => setResultView('table')}
+                    title="Table"
+                  >
+                    <TableOutlined />
+                  </button>
+                  {sqlConfig?.chartEnabled ? (
+                    <button
+                      type="button"
+                      className={`${styles.terminalIconButton} ${resultView === 'chart' ? styles.terminalText2 : ''}`}
+                      onClick={() => setResultView('chart')}
+                      title="Chart"
+                    >
+                      <LineChartOutlined />
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+
+              {resultView === 'chart' && sqlConfig?.chartEnabled ? (
+                <>
+                  <MyChart
+                    resultData={queryResults}
+                    chartType={previewChartType}
+                    yAxisRange={
+                      yAxisMin !== '' || yAxisMax !== ''
+                        ? {
+                            ...(yAxisMin !== '' && { min: Number(yAxisMin) }),
+                            ...(yAxisMax !== '' && { max: Number(yAxisMax) })
+                          }
+                        : undefined
+                    }
+                  />
+                  <div style={{ marginTop: 16, display: 'flex', flexWrap: 'wrap', gap: 24, alignItems: 'flex-start' }}>
+                    <fieldset className={styles.terminalFieldset}>
+                      <legend className={styles.terminalLegend}>Chart Type</legend>
+                      <ChartTypeRadioGroup
+                        value={previewChartType}
+                        onChange={(e) => setPreviewChartType(e.target.value)}
+                      />
+                    </fieldset>
+                    <fieldset className={styles.terminalFieldset}>
+                      <legend className={styles.terminalLegend}>Y-Axis Range</legend>
+                      <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap', fontSize: 12 }}>
+                        <label className={styles.terminalText} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                          <span>Min:</span>
+                          <input
+                            type="number"
+                            placeholder="auto"
+                            value={yAxisMin}
+                            onChange={(e) => setYAxisMin(e.target.value)}
+                            className={styles.teriminalInputField}
+                            style={{ width: 78, minWidth: 78, padding: '4px 8px', fontSize: 12 }}
+                          />
+                        </label>
+                        <label className={styles.terminalText} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+                          <span>Max:</span>
+                          <input
+                            type="number"
+                            placeholder="auto"
+                            value={yAxisMax}
+                            onChange={(e) => setYAxisMax(e.target.value)}
+                            className={styles.teriminalInputField}
+                            style={{ width: 78, minWidth: 78, padding: '4px 8px', fontSize: 12 }}
+                          />
+                        </label>
+                      </div>
+                    </fieldset>
+                  </div>
+                </>
+              ) : null}
               {/* Terminal-style search area */}
+              {resultView === 'table' ? (
               <div style={{ marginBottom: 16, padding: 16, background: styles.sessionBackground, borderRadius: 8, border: styles.sessionBorder }}>
                 <h4 style={{ color: styles.sessionHighlightText, margin: '0 0 12px 0', fontSize: 14 }}>Column Search</h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
@@ -528,6 +638,8 @@ export default function SqlPage() {
                   ))}
                 </div>
               </div>
+              ) : null}
+              {resultView === 'table' ? (
               <Table 
                 dataSource={filteredResults} 
                 columns={columns} 
@@ -555,6 +667,7 @@ export default function SqlPage() {
                   ),
                 }}
               />
+              ) : null}
             </div>
           ) : (
             <div style={{ marginBottom: 16, padding: 16, background: styles.sessionBackground, borderRadius: 8, border: styles.sessionBorder }}>
@@ -580,6 +693,10 @@ export default function SqlPage() {
         onMenuNameChange={setMenuName}
         onSqlContentChange={setSqlContent}
         onDbnameChange={setDbname}
+        chartEnabled={chartEnabled}
+        onChartEnabledChange={setChartEnabled}
+        chartType={chartType}
+        onChartTypeChange={setChartType}
         onCancel={handleCloseSqlModal}
         onSave={handleSaveSqlConfig}
         saving={isSubmitting}

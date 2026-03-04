@@ -256,6 +256,8 @@ export default function UserManagerPage() {
         render: (value, record) => (
           <Switch
             checked={value === 0}
+            checkedChildren="ON"
+            unCheckedChildren="OFF"
             className={styles.statusSwitch}
             onChange={(checked) => handleStatusToggle(record.username, checked)}
           />

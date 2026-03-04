@@ -30,6 +30,8 @@ export default function SqlManagerPage() {
   const [menuName, setMenuName] = useState('');
   const [sqlContent, setSqlContent] = useState('');
   const [dbname, setDbname] = useState('');
+  const [chartEnabled, setChartEnabled] = useState(false);
+  const [chartType, setChartType] = useState('lineChart');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [editingSqlConfig, setEditingSqlConfig] = useState(null);
@@ -118,15 +120,35 @@ export default function SqlManagerPage() {
     setMenuName('');
     setSqlContent('');
     setDbname('');
+    setChartEnabled(false);
+    setChartType('lineChart');
   };
   
-  const openEditSqlModal = (config) => {
-    setMenuName(config.menu_name);
-    setSqlContent(config.sql);
-    setDbname(config.dbname || '');
-    setEditingSqlConfig(config);
-    setSubmitModalOpen(true);
-    setSubmitError('');
+  const openEditSqlModal = async (config) => {
+    try {
+      // Fetch latest config from API so modal shows current data
+      // (config may have been updated elsewhere, e.g. on [id].jsx detail page)
+      const data = await request(`/sql/config/${config.id}`);
+      const fresh = data?.config || config;
+      setMenuName(fresh.menu_name);
+      setSqlContent(fresh.sql);
+      setDbname(fresh.dbname || '');
+      setChartEnabled(!!fresh.chartEnabled);
+      setChartType(fresh.chart_type || 'lineChart');
+      setEditingSqlConfig(fresh);
+      setSubmitModalOpen(true);
+      setSubmitError('');
+    } catch (err) {
+      // Fallback to passed config if fetch fails
+      setMenuName(config.menu_name);
+      setSqlContent(config.sql);
+      setDbname(config.dbname || '');
+      setChartEnabled(!!config.chartEnabled);
+      setChartType(config.chart_type || 'lineChart');
+      setEditingSqlConfig(config);
+      setSubmitModalOpen(true);
+      setSubmitError('');
+    }
   };
   
   const closeSubmitModal = () => {
@@ -135,6 +157,8 @@ export default function SqlManagerPage() {
     setDbname('');
     setMenuName('');
     setSqlContent('');
+    setChartEnabled(false);
+    setChartType('lineChart');
     setEditingSqlConfig(null);
   };
 
@@ -267,6 +291,8 @@ export default function SqlManagerPage() {
             menu_name: menuName,
             sql: sqlContent,
             dbname: dbname,
+            chartEnabled: chartEnabled,
+            chart_type: chartType || 'lineChart',
           },
         });
       } else {
@@ -276,6 +302,8 @@ export default function SqlManagerPage() {
             menu_name: menuName,
             sql: sqlContent,
             dbname: dbname,
+            chartEnabled: chartEnabled,
+            chart_type: chartType || 'lineChart',
           },
         });
       }
@@ -287,6 +315,8 @@ export default function SqlManagerPage() {
       setMenuName('');
       setSqlContent('');
       setDbname('');
+      setChartEnabled(false);
+      setChartType('lineChart');
       setEditingSqlConfig(null);
       setSubmitModalOpen(false);
     } catch (error) {
@@ -524,10 +554,14 @@ export default function SqlManagerPage() {
         menuName={menuName}
         sqlContent={sqlContent}
         dbname={dbname}
+        chartEnabled={chartEnabled}
+        chartType={chartType}
         dbConfigs={dbConfigs}
         onMenuNameChange={setMenuName}
         onSqlContentChange={setSqlContent}
         onDbnameChange={setDbname}
+        onChartEnabledChange={setChartEnabled}
+        onChartTypeChange={setChartType}
         onCancel={closeSubmitModal}
         onSave={handleSubmit}
         saving={isSubmitting}

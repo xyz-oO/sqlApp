@@ -19,6 +19,7 @@
   "dependencies": {
     "@ant-design/icons": "^6.1.0",
     "antd": "^6.2.2",
+    "echarts-for-react": "^3.0.6",
     "umi": "4.6.24"
   },
   "devDependencies": {

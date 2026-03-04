@@ -19,6 +19,7 @@ export const SqlService = {
           sql
         }
       });
+     
       return response;
     } catch (error) {
       console.error('Error executing SQL:', error);

@@ -12,6 +12,7 @@ from flask_cors import CORS
 import base64
 
 app = Flask(__name__)
+app.config["JSON_SORT_KEYS"] = False
 FRONTEND_ORIGIN = os.getenv("FRONTEND_ORIGIN", "http://localhost:8000")
 CORS(app, supports_credentials=True, origins=[FRONTEND_ORIGIN])
 
@@ -138,7 +139,46 @@ def _load_sql_config(username):
     try:
         path = os.path.join(USERS_DIR, username, "sqlconfig.json")
         with open(path, "r", encoding="utf-8") as file:
-            return json.load(file)
+            configs = json.load(file)
+            if not isinstance(configs, list):
+                return configs
+
+            changed = False
+            normalized = []
+            for c in configs:
+                if not isinstance(c, dict):
+                    normalized.append(c)
+                    continue
+                if "chartEnabled" not in c:
+                    c = {**c, "chartEnabled": bool(c.get("isChart", False))}
+                    changed = True
+                if "isChart" in c:
+                    c = dict(c)
+                    c.pop("isChart", None)
+                    changed = True
+                if "chart_type" not in c:
+                    c = {**c, "chart_type": "lineChart"}
+                    changed = True
+                # Normalize chart_type: only lineChart, Bar-v-chart, Bar-h-chart, PieChart
+                if isinstance(c.get("chart_type"), str):
+                    raw = c.get("chart_type").strip()
+                    if raw in ("lineChart", "Bar-v-chart", "Bar-h-chart", "PieChart"):
+                        mapped = raw
+                    else:
+                        mapped = "lineChart"
+                    if mapped != c.get("chart_type"):
+                        c = {**c, "chart_type": mapped}
+                        changed = True
+                normalized.append(c)
+
+            if changed:
+                try:
+                    with open(path, "w", encoding="utf-8") as out:
+                        json.dump(normalized, out, indent=2)
+                except Exception:
+                    pass
+
+            return normalized
     except FileNotFoundError:
         return []
 
@@ -564,6 +604,7 @@ def execute_sql():
                         if isinstance(value, int) and abs(value) > 9007199254740991:
                             row_dict[key] = str(value)
                     results.append(row_dict)
+            # print("results:", results)
             return jsonify({"results": results})
 
     except Exception as e:
@@ -579,6 +620,12 @@ def save_sql_config():
     menu_name = payload.get("menu_name") or ""
     sql = payload.get("sql") or ""
     dbname = payload.get("dbname") or ""
+    chart_enabled = bool(payload.get("chartEnabled", False))
+    chart_type = (
+        (payload.get("chart_type") or "lineChart").strip()
+        if isinstance(payload.get("chart_type") or "lineChart", str)
+        else "lineChart"
+    )
     if not menu_name or not sql:
         return jsonify({"error": "menu_name and sql are required"}), 400
     
@@ -595,6 +642,8 @@ def save_sql_config():
         "menu_name": menu_name,
         "sql": sql,
         "dbname": dbname,
+        "chartEnabled": chart_enabled,
+        "chart_type": chart_type or "lineChart",
         "created_at": _now().isoformat() + "Z"
     }
     existing_configs.append(new_config)
@@ -647,6 +696,14 @@ def update_sql_config(config_id):
     menu_name = payload.get("menu_name") or ""
     sql = payload.get("sql") or ""
     dbname = payload.get("dbname") or ""
+    has_chart_enabled = "chartEnabled" in payload
+    chart_enabled = bool(payload.get("chartEnabled", False))
+    has_chart_type = "chart_type" in payload
+    chart_type = (
+        (payload.get("chart_type") or "lineChart").strip()
+        if isinstance(payload.get("chart_type") or "lineChart", str)
+        else "lineChart"
+    )
     if not menu_name or not sql:
         return jsonify({"error": "menu_name and sql are required"}), 400
     
@@ -658,6 +715,11 @@ def update_sql_config(config_id):
     configs[config_index]["menu_name"] = menu_name
     configs[config_index]["sql"] = sql
     configs[config_index]["dbname"] = dbname
+    if has_chart_enabled:
+        configs[config_index]["chartEnabled"] = chart_enabled
+        configs[config_index].pop("isChart", None)
+    if has_chart_type:
+        configs[config_index]["chart_type"] = chart_type or "lineChart"
     _save_sql_config(username, configs)
     return jsonify({"ok": True})
 
